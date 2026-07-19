@@ -6,7 +6,6 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.router import api_router
 from app.core.config import settings
-from app.db.database import database
 
 
 @asynccontextmanager
@@ -14,12 +13,7 @@ async def lifespan(_: FastAPI):
     if settings.database_url.startswith("sqlite"):
         Path("data").mkdir(exist_ok=True)
 
-    database.connect(reuse_if_open=True)
-    try:
-        yield
-    finally:
-        if not database.is_closed():
-            database.close()
+    yield
 
 
 app = FastAPI(
@@ -37,4 +31,3 @@ app.add_middleware(
 )
 
 app.include_router(api_router, prefix=settings.api_v1_prefix)
-

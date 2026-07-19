@@ -32,7 +32,9 @@
 cd backend
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
-python -m pip install -e ".[dev]"
+python -m pip install -e ".[dev,postgres]"
+docker compose up -d postgres
+python -m app.db.bootstrap
 python -m uvicorn app.main:app --reload
 ```
 
@@ -65,4 +67,4 @@ npm run lint
 npm run build
 ```
 
-本地第一阶段使用 SQLite，便于立即学习和运行。进入核心数据模型阶段后切换到 PostgreSQL；仓库中的 `compose.yml` 已保留 PostgreSQL 开发配置，但需要先安装 Docker Desktop。
+开发环境使用 Docker 中的 PostgreSQL。自动化测试使用独立的 SQLite 数据库，避免修改本地开发数据。
