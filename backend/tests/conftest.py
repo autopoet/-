@@ -7,7 +7,11 @@ os.environ["APP_DATABASE_URL"] = "sqlite:///data/test.db"
 
 from app.db.database import database  # noqa: E402
 from app.db.seed import DEFAULT_SYMPTOMS  # noqa: E402
+from app.models.article_revision import ArticleRevision  # noqa: E402
 from app.models.symptom import Symptom  # noqa: E402
+from app.models.user import AuthSession, User  # noqa: E402
+
+TABLES = [User, AuthSession, Symptom, ArticleRevision]
 
 
 @pytest.fixture(autouse=True)
@@ -18,8 +22,8 @@ def test_database():
         database.close()
 
     database.connect()
-    database.drop_tables([Symptom], safe=True)
-    database.create_tables([Symptom])
+    database.drop_tables(TABLES, safe=True)
+    database.create_tables(TABLES)
     Symptom.insert_many(DEFAULT_SYMPTOMS).execute()
     database.close()
 
@@ -29,5 +33,5 @@ def test_database():
         database.close()
 
     database.connect()
-    database.drop_tables([Symptom], safe=True)
+    database.drop_tables(TABLES, safe=True)
     database.close()

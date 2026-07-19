@@ -16,7 +16,15 @@ export function AppLayout() {
         ? `${keyword.slice(0, 20)}的搜索结果｜电赛白皮书`
         : '知识库｜电赛白皮书'
     } else if (location.pathname.startsWith('/articles/')) {
-      document.title = '故障排查文档｜电赛白皮书'
+      document.title = location.pathname.endsWith('/edit')
+        ? '编辑文档｜电赛白皮书'
+        : '故障排查文档｜电赛白皮书'
+    } else if (location.pathname === '/login') {
+      document.title = '登录｜电赛白皮书'
+    } else if (location.pathname === '/submissions') {
+      document.title = '我的提交｜电赛白皮书'
+    } else if (location.pathname === '/reviews') {
+      document.title = '审核队列｜电赛白皮书'
     } else {
       document.title = '页面未找到｜电赛白皮书'
     }

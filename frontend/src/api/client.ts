@@ -36,12 +36,21 @@ function getErrorMessage(payload: ApiErrorPayload | null, status: number) {
 
 export async function apiRequest<T>(
   path: string,
-  options: { signal?: AbortSignal } = {},
+  options: {
+    signal?: AbortSignal
+    method?: 'GET' | 'POST' | 'PUT' | 'DELETE'
+    body?: unknown
+  } = {},
 ): Promise<T> {
   const response = await fetch(`${API_BASE_URL}${path}`, {
     signal: options.signal,
+    method: options.method ?? 'GET',
+    body: options.body === undefined ? undefined : JSON.stringify(options.body),
     credentials: 'include',
-    headers: { Accept: 'application/json' },
+    headers: {
+      Accept: 'application/json',
+      ...(options.body === undefined ? {} : { 'Content-Type': 'application/json' }),
+    },
   })
 
   if (!response.ok) {
@@ -54,6 +63,10 @@ export async function apiRequest<T>(
     }
 
     throw new ApiError(response.status, getErrorMessage(payload, response.status))
+  }
+
+  if (response.status === 204) {
+    return undefined as T
   }
 
   return (await response.json()) as T

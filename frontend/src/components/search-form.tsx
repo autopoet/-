@@ -13,7 +13,7 @@ import styles from './search-form.module.css'
 
 type SearchFormProps = {
   initialValue?: string
-  variant?: 'hero' | 'compact' | 'page'
+  variant?: 'hero' | 'page'
   showSuggestions?: boolean
   autoFocus?: boolean
 }

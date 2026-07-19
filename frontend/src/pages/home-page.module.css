@@ -1,101 +1,41 @@
 .page {
-  width: min(var(--content-max), calc(100% - var(--space-8)));
+  width: min(52rem, calc(100% - var(--space-8)));
   padding-bottom: var(--space-24);
   margin-inline: auto;
 }
 
 .searchSection {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(28rem, 1.1fr);
-  align-items: end;
-  gap: var(--space-16);
   padding-block: var(--space-16);
   border-bottom: 1px solid var(--color-border);
 }
 
-.searchIntro {
-  max-width: 34rem;
-}
-
-.context {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  color: var(--color-accent);
-  font-size: var(--text-meta);
-  font-weight: var(--weight-semibold);
-}
-
-.searchIntro h1,
-.searchIntro p {
-  margin: 0;
-}
-
-.searchIntro h1 {
-  margin-top: var(--space-4);
-  font-size: var(--text-page);
-  font-weight: var(--weight-bold);
-  line-height: 1.3;
+.searchSection h1 {
+  margin: 0 0 var(--space-8);
+  font-size: 2.25rem;
+  line-height: 1.25;
   letter-spacing: -0.02em;
   text-wrap: balance;
 }
 
-.searchIntro p {
-  max-width: 32rem;
-  margin-top: var(--space-4);
-  color: var(--color-text);
-  font-size: var(--text-body);
-  line-height: 1.75;
-  text-wrap: pretty;
-}
-
-.primarySearch {
-  padding-bottom: var(--space-1);
-}
-
-.searchHint {
-  margin: var(--space-3) 0 0;
-  color: var(--color-muted);
-  font-size: var(--text-meta);
-  line-height: 1.5;
-}
-
-.contentGrid {
-  display: grid;
-  grid-template-columns: minmax(0, 2fr) minmax(17rem, 0.8fr);
-  gap: var(--space-16);
-  padding-top: var(--space-12);
+.symptomsSection {
+  padding-top: var(--space-10);
 }
 
 .sectionHeader {
-  min-height: 4rem;
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: space-between;
-  gap: var(--space-6);
+  gap: var(--space-4);
   padding-bottom: var(--space-5);
 }
 
-.sectionHeader h2,
-.sectionHeader p {
-  margin: 0;
-}
-
 .sectionHeader h2 {
+  margin: 0;
   font-size: var(--text-section);
-  font-weight: var(--weight-bold);
-  line-height: 1.35;
-}
-
-.sectionHeader p {
-  margin-top: var(--space-2);
-  color: var(--color-muted);
-  font-size: var(--text-meta);
-  line-height: 1.6;
 }
 
 .sectionLink {
-  min-height: 2.75rem;
+  min-height: 44px;
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
@@ -103,11 +43,6 @@
   font-size: var(--text-meta);
   font-weight: var(--weight-semibold);
   text-decoration: none;
-  white-space: nowrap;
-}
-
-.sectionLink:hover {
-  color: var(--color-accent-hover);
 }
 
 .symptomList {
@@ -117,38 +52,22 @@
   border-top: 1px solid var(--color-border);
 }
 
-.refreshNotice {
-  margin: 0 0 var(--space-3);
-  color: var(--color-warning);
-  font-size: var(--text-meta);
-  line-height: 1.6;
-}
-
 .symptomList li {
   border-bottom: 1px solid var(--color-border);
 }
 
 .symptomLink {
-  min-height: 7rem;
-  display: grid;
-  grid-template-columns: 2.5rem minmax(0, 1fr) auto;
+  min-height: 6.5rem;
+  display: flex;
   align-items: center;
-  gap: var(--space-4);
+  justify-content: space-between;
+  gap: var(--space-5);
   padding-block: var(--space-5);
+  color: var(--color-muted);
   text-decoration: none;
 }
 
-.symptomIndex {
-  align-self: start;
-  padding-top: var(--space-1);
-  color: var(--color-muted);
-  font-family: var(--font-mono);
-  font-size: var(--text-caption);
-  font-variant-numeric: tabular-nums;
-}
-
 .symptomContent {
-  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
@@ -157,168 +76,27 @@
 .symptomContent strong {
   color: var(--color-ink);
   font-size: var(--text-component);
-  font-weight: var(--weight-semibold);
-  line-height: 1.4;
 }
 
 .symptomContent span {
-  color: var(--color-muted);
-  font-size: var(--text-body);
-  line-height: 1.65;
-}
-
-.symptomArrow {
-  color: var(--color-muted);
-  transition:
-    color var(--duration-fast) var(--ease-out),
-    transform var(--duration-fast) var(--ease-out);
-}
-
-.symptomLink:hover .symptomContent strong,
-.symptomLink:hover .symptomArrow {
-  color: var(--color-accent);
-}
-
-.symptomLink:hover .symptomArrow {
-  transform: translateX(var(--space-1));
-}
-
-.guide {
-  align-self: start;
-  padding-top: var(--space-5);
-}
-
-.signalMark {
-  position: relative;
-  width: 100%;
-  height: 1rem;
-  margin-bottom: var(--space-6);
-}
-
-.signalMark::before {
-  position: absolute;
-  top: 50%;
-  right: 0;
-  left: 0;
-  height: 1px;
-  content: "";
-  background: var(--color-accent);
-}
-
-.signalMark span {
-  position: absolute;
-  top: 50%;
-  left: 32%;
-  width: 0.75rem;
-  height: 0.75rem;
-  background: var(--color-canvas);
-  border: 2px solid var(--color-accent);
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-}
-
-.guide h2 {
-  margin: 0;
-  font-size: var(--text-component);
-  line-height: 1.4;
-}
-
-.guide ol {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-5);
-  padding: 0;
-  margin: var(--space-6) 0 0;
-  list-style: none;
-}
-
-.guide li {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  align-items: start;
-  gap: var(--space-3);
-  color: var(--color-accent);
-}
-
-.guide li div {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-}
-
-.guide strong {
-  color: var(--color-ink);
-  font-size: var(--text-body);
-  font-weight: var(--weight-semibold);
-}
-
-.guide li span,
-.guideNote {
-  color: var(--color-muted);
-  font-size: var(--text-meta);
   line-height: 1.6;
 }
 
-.guideNote {
-  padding-top: var(--space-5);
-  margin: var(--space-6) 0 0;
-  border-top: 1px solid var(--color-border);
-}
-
-@media (max-width: 62rem) {
-  .searchSection {
-    grid-template-columns: 1fr;
-    align-items: start;
-    gap: var(--space-8);
-  }
-
-  .primarySearch {
-    max-width: 44rem;
-  }
-
-  .contentGrid {
-    grid-template-columns: 1fr;
-    gap: var(--space-12);
-  }
-
-  .guide {
-    max-width: 40rem;
-  }
+.symptomLink:hover,
+.symptomLink:hover strong {
+  color: var(--color-accent);
 }
 
 @media (max-width: 40rem) {
   .page {
-    width: min(100% - var(--space-6), var(--content-max));
-    padding-bottom: var(--space-16);
+    width: calc(100% - var(--space-6));
   }
 
   .searchSection {
-    gap: var(--space-6);
     padding-block: var(--space-10);
   }
 
-  .searchIntro h1 {
+  .searchSection h1 {
     font-size: 1.75rem;
-  }
-
-  .contentGrid {
-    padding-top: var(--space-8);
-  }
-
-  .sectionHeader {
-    align-items: flex-start;
-  }
-
-  .symptomLink {
-    grid-template-columns: 2rem minmax(0, 1fr) auto;
-    min-height: 6rem;
-  }
-
-  .symptomContent strong {
-    font-size: var(--text-body);
-  }
-
-  .symptomContent span {
-    font-size: var(--text-meta);
   }
 }

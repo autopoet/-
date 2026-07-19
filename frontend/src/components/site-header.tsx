@@ -1,7 +1,8 @@
-import { BookOpenText, Menu, Search, X } from 'lucide-react'
+import { BookOpenText, Menu, X } from 'lucide-react'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
-import { SearchForm } from './search-form'
+import { authKeys, logout, useCurrentUser } from '../api/auth'
 import styles from './site-header.module.css'
 
 const navigation = [
@@ -11,11 +12,44 @@ const navigation = [
 
 export function SiteHeader() {
   const location = useLocation()
+  const queryClient = useQueryClient()
+  const currentUser = useCurrentUser()
   const [menuOpen, setMenuOpen] = useState(false)
+  const logoutMutation = useMutation({
+    mutationFn: logout,
+    onSuccess: () => {
+      queryClient.setQueryData(authKeys.currentUser, null)
+      void queryClient.invalidateQueries()
+    },
+  })
 
-  useEffect(() => {
-    setMenuOpen(false)
-  }, [location.pathname, location.search])
+  useEffect(() => setMenuOpen(false), [location.pathname, location.search])
+
+  const accountLinks = currentUser.data ? (
+    <>
+      <NavLink className={styles.utilityLink} to="/submissions">
+        我的提交
+      </NavLink>
+      {currentUser.data.role === 'reviewer' ? (
+        <NavLink className={styles.utilityLink} to="/reviews">
+          审核
+        </NavLink>
+      ) : null}
+      <span className={styles.username}>{currentUser.data.username}</span>
+      <button
+        className={styles.logoutButton}
+        type="button"
+        disabled={logoutMutation.isPending}
+        onClick={() => logoutMutation.mutate()}
+      >
+        退出
+      </button>
+    </>
+  ) : (
+    <Link className={styles.loginLink} to="/login">
+      登录
+    </Link>
+  )
 
   return (
     <header className={styles.header}>
@@ -40,66 +74,28 @@ export function SiteHeader() {
           ))}
         </nav>
 
-        <div className={styles.desktopSearch}>
-          <SearchForm
-            initialValue={
-              location.pathname === '/explore'
-                ? new URLSearchParams(location.search).get('q') ?? ''
-                : ''
-            }
-            variant="compact"
-            showSuggestions={false}
-          />
-        </div>
+        <div className={styles.account}>{accountLinks}</div>
 
-        <span className={styles.scope}>公开知识库</span>
-
-        <div className={styles.mobileActions}>
-          <Link
-            className={styles.iconButton}
-            to="/explore"
-            aria-label="打开搜索"
-          >
-            <Search aria-hidden="true" size={20} />
-          </Link>
-          <button
-            className={styles.iconButton}
-            type="button"
-            aria-expanded={menuOpen}
-            aria-controls="mobile-navigation"
-            aria-label={menuOpen ? '关闭导航' : '打开导航'}
-            onClick={() => setMenuOpen((current) => !current)}
-          >
-            {menuOpen ? (
-              <X aria-hidden="true" size={20} />
-            ) : (
-              <Menu aria-hidden="true" size={20} />
-            )}
-          </button>
-        </div>
+        <button
+          className={styles.menuButton}
+          type="button"
+          aria-expanded={menuOpen}
+          aria-controls="mobile-navigation"
+          aria-label={menuOpen ? '关闭导航' : '打开导航'}
+          onClick={() => setMenuOpen((current) => !current)}
+        >
+          {menuOpen ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}
+        </button>
       </div>
 
       {menuOpen ? (
-        <nav
-          id="mobile-navigation"
-          className={styles.mobileNav}
-          aria-label="移动端导航"
-        >
+        <nav id="mobile-navigation" className={styles.mobileNav} aria-label="移动端导航">
           {navigation.map((item) => (
-            <NavLink
-              key={item.to}
-              className={({ isActive }) =>
-                `${styles.mobileNavLink} ${
-                  isActive ? styles.mobileNavLinkActive : ''
-                }`
-              }
-              end={item.end}
-              to={item.to}
-            >
+            <NavLink key={item.to} to={item.to} end={item.end}>
               {item.label}
             </NavLink>
           ))}
-          <span className={styles.mobileScope}>公开知识库</span>
+          {accountLinks}
         </nav>
       ) : null}
     </header>

@@ -9,6 +9,9 @@ class Settings(BaseSettings):
     api_v1_prefix: str = "/api/v1"
     database_url: str = "sqlite:///data/app.db"
     frontend_origin: str = "http://localhost:5173"
+    session_cookie_name: str = "diansai_session"
+    session_days: int = 7
+    secure_cookies: bool = False
 
     model_config = SettingsConfigDict(
         env_file=".env",
@@ -23,4 +26,3 @@ def get_settings() -> Settings:
 
 
 settings = get_settings()
-

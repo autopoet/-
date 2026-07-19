@@ -28,12 +28,6 @@
   padding-left: var(--space-5);
 }
 
-.compact .control {
-  min-height: 2.75rem;
-  padding-left: var(--space-3);
-  border-color: var(--color-control-border);
-}
-
 .searchIcon {
   flex: 0 0 auto;
   color: var(--color-muted);
@@ -48,10 +42,6 @@
   background: transparent;
   border: 0;
   outline: 0;
-}
-
-.compact .input {
-  font-size: var(--text-meta);
 }
 
 .input::placeholder {
@@ -107,17 +97,6 @@
 .submitButton:active {
   background: var(--color-accent-active);
   transform: translateY(1px);
-}
-
-.compact .submitButton {
-  width: 2.75rem;
-  min-width: 2.75rem;
-  min-height: 2.75rem;
-  padding: 0;
-}
-
-.compact .submitButton span {
-  display: none;
 }
 
 .loader {

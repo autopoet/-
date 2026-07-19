@@ -1,9 +1,8 @@
 import { useQuery } from '@tanstack/react-query'
 import {
-  BadgeCheck,
-  BookOpen,
   ChevronRight,
   MessageSquareText,
+  PencilLine,
   ShieldAlert,
   X,
 } from 'lucide-react'
@@ -15,6 +14,7 @@ import {
   useState,
 } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import { articleKeys, getPublishedArticle } from '../api/articles'
 import { ApiError } from '../api/client'
 import { getSymptom, symptomKeys } from '../api/symptoms'
 import { EmptyState, ErrorState, ListSkeleton } from '../components/request-state'
@@ -23,6 +23,44 @@ import {
   demoArticles,
 } from '../content/demo-articles'
 import styles from './article-page.module.css'
+
+function parsePublishedBody(body: string): ArticleSection[] {
+  const sections: ArticleSection[] = []
+  let current: ArticleSection = {
+    id: 'published-section-1',
+    title: '正文',
+    paragraphs: [],
+    list: [],
+  }
+
+  function finishSection() {
+    if (current.paragraphs?.length || current.list?.length) {
+      if (!current.paragraphs?.length) current.paragraphs = undefined
+      if (!current.list?.length) current.list = undefined
+      sections.push(current)
+    }
+  }
+
+  for (const rawLine of body.split('\n')) {
+    const line = rawLine.trim()
+    if (!line) continue
+    if (line.startsWith('## ')) {
+      finishSection()
+      current = {
+        id: `published-section-${sections.length + 1}`,
+        title: line.slice(3),
+        paragraphs: [],
+        list: [],
+      }
+    } else if (line.startsWith('- ')) {
+      current.list?.push(line.slice(2))
+    } else {
+      current.paragraphs?.push(line)
+    }
+  }
+  finishSection()
+  return sections
+}
 
 function useActiveSection(sectionIds: string[]) {
   const [activeSection, setActiveSection] = useState(sectionIds[0] ?? '')
@@ -191,10 +229,27 @@ export default function ArticlePage() {
     queryFn: ({ signal }) => getSymptom(numericArticleId, signal),
     enabled: validArticleId,
   })
+  const publishedQuery = useQuery({
+    queryKey: articleKeys.published(numericArticleId),
+    queryFn: ({ signal }) => getPublishedArticle(numericArticleId, signal),
+    enabled: validArticleId,
+    retry: false,
+  })
 
-  const article = symptomQuery.data
-    ? demoArticles[symptomQuery.data.name]
-    : undefined
+  const article = useMemo(
+    () =>
+      publishedQuery.data
+        ? {
+            applicability: publishedQuery.data.applicability,
+            safety: publishedQuery.data.safety,
+            checklist: publishedQuery.data.checklist,
+            sections: parsePublishedBody(publishedQuery.data.body),
+          }
+        : symptomQuery.data
+          ? demoArticles[symptomQuery.data.name]
+          : undefined,
+    [publishedQuery.data, symptomQuery.data],
+  )
   const sectionIds = useMemo(
     () =>
       article
@@ -269,8 +324,11 @@ export default function ArticlePage() {
           title="这个主题还没有完整排查文档"
           description="故障现象已经收录，正文将在贡献和审核流程完成后公开。"
           action={
-            <Link className={styles.backLink} to="/explore">
-              查看其他故障现象
+            <Link
+              className={styles.backLink}
+              to={`/articles/${numericArticleId}/edit`}
+            >
+              开始编写
             </Link>
           }
         />
@@ -311,10 +369,6 @@ export default function ArticlePage() {
               </a>
             ))}
           </nav>
-          <div className={styles.outlineStatus}>
-            <BadgeCheck aria-hidden="true" size={17} />
-            内容结构示范
-          </div>
         </aside>
 
         <article className={styles.document}>
@@ -326,10 +380,13 @@ export default function ArticlePage() {
 
           <header className={styles.articleHeader}>
             <div className={styles.headerActions}>
-              <span className={styles.demoBadge}>
-                <BookOpen aria-hidden="true" size={15} />
-                内容示范
-              </span>
+              <Link
+                className={styles.editButton}
+                to={`/articles/${numericArticleId}/edit`}
+              >
+                <PencilLine aria-hidden="true" size={17} />
+                编辑
+              </Link>
               <button
                 className={styles.inlineCommentButton}
                 type="button"
@@ -341,20 +398,21 @@ export default function ArticlePage() {
                 评论 0
               </button>
             </div>
-            <h1>{symptomQuery.data.name}</h1>
-            <p className={styles.summary}>{symptomQuery.data.description}</p>
-            <div className={styles.metadata}>
-              <span>
-                <BadgeCheck aria-hidden="true" size={15} />
-                公开可读，修改需审核
-              </span>
-              <span>故障现象 #{symptomQuery.data.id}</span>
-              {symptomQuery.isError ? (
-                <span className={styles.staleNotice} role="status">
-                  更新失败，当前显示上次加载的内容
+            <h1>{publishedQuery.data?.title ?? symptomQuery.data.name}</h1>
+            <p className={styles.summary}>
+              {publishedQuery.data?.summary ?? symptomQuery.data.description}
+            </p>
+            {publishedQuery.data ? (
+              <div className={styles.metadata}>
+                <span>
+                  已审核 · {publishedQuery.data.author_name} ·{' '}
+                  {new Date(
+                    publishedQuery.data.published_at ??
+                      publishedQuery.data.updated_at,
+                  ).toLocaleDateString('zh-CN')}
                 </span>
-              ) : null}
-            </div>
+              </div>
+            ) : null}
           </header>
 
           <details className={styles.mobileOutline}>
@@ -401,12 +459,6 @@ export default function ArticlePage() {
             ))}
           </div>
 
-          <footer className={styles.articleFooter}>
-            <strong>关于本条目</strong>
-            <p>
-              当前正文用于展示首版文档结构。实际排查应结合具体电路、器件手册和测量数据，修改内容将在审核通过后公开。
-            </p>
-          </footer>
         </article>
 
         <aside className={styles.commentRail} aria-label="评论入口">

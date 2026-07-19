@@ -1,0 +1,78 @@
+import { apiRequest } from './client'
+
+export type ArticleDraft = {
+  title: string
+  summary: string
+  applicability: string
+  safety: string
+  checklist: string[]
+  body: string
+}
+
+export type ArticleRevision = ArticleDraft & {
+  id: number
+  symptom_id: number
+  author_id: number
+  author_name: string
+  status: 'draft' | 'pending' | 'approved' | 'rejected' | 'superseded'
+  review_note: string
+  created_at: string
+  updated_at: string
+  submitted_at: string | null
+  published_at: string | null
+}
+
+export type RevisionListResponse = {
+  items: ArticleRevision[]
+  total: number
+}
+
+export const articleKeys = {
+  published: (symptomId: number) => ['articles', symptomId, 'published'] as const,
+  draft: (symptomId: number) => ['articles', symptomId, 'draft'] as const,
+  mine: ['articles', 'mine'] as const,
+  reviews: ['reviews'] as const,
+}
+
+export function getPublishedArticle(symptomId: number, signal?: AbortSignal) {
+  return apiRequest<ArticleRevision>(`/articles/${symptomId}`, { signal })
+}
+
+export function getDraft(symptomId: number, signal?: AbortSignal) {
+  return apiRequest<ArticleRevision>(`/articles/${symptomId}/draft`, { signal })
+}
+
+export function saveDraft(symptomId: number, draft: ArticleDraft) {
+  return apiRequest<ArticleRevision>(`/articles/${symptomId}/draft`, {
+    method: 'PUT',
+    body: draft,
+  })
+}
+
+export function submitDraft(symptomId: number) {
+  return apiRequest<ArticleRevision>(`/articles/${symptomId}/submit`, {
+    method: 'POST',
+  })
+}
+
+export function listMyRevisions(signal?: AbortSignal) {
+  return apiRequest<RevisionListResponse>('/articles/mine', { signal })
+}
+
+export function listPendingReviews(signal?: AbortSignal) {
+  return apiRequest<RevisionListResponse>('/reviews', { signal })
+}
+
+export function approveRevision(revisionId: number, note: string) {
+  return apiRequest<ArticleRevision>(`/reviews/${revisionId}/approve`, {
+    method: 'POST',
+    body: { note },
+  })
+}
+
+export function rejectRevision(revisionId: number, note: string) {
+  return apiRequest<ArticleRevision>(`/reviews/${revisionId}/reject`, {
+    method: 'POST',
+    body: { note },
+  })
+}
