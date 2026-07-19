@@ -55,7 +55,7 @@ function App() {
         <a className="brand" href="/">
           电赛白皮书
         </a>
-        <span className="phase">项目骨架 · 阶段 0</span>
+        <span className="phase">阶段 0 · 环境已连通</span>
       </header>
 
       <section className="hero">
