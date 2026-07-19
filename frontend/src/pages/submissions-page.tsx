@@ -45,12 +45,20 @@ export default function SubmissionsPage() {
             <div>
               <strong>{revision.title}</strong>
               <span>
-                {statusText[revision.status]} · {new Date(revision.updated_at).toLocaleString('zh-CN')}
+                v{revision.version_number} · {statusText[revision.status]} · 修改者{' '}
+                {revision.author_name} ·{' '}
+                {new Date(revision.updated_at).toLocaleString('zh-CN')}
               </span>
+              {revision.reviewer_name && revision.reviewed_at ? (
+                <p>
+                  审核者 {revision.reviewer_name} ·{' '}
+                  {new Date(revision.reviewed_at).toLocaleString('zh-CN')}
+                </p>
+              ) : null}
               {revision.review_note ? <p>审核意见：{revision.review_note}</p> : null}
             </div>
             {revision.status === 'draft' || revision.status === 'rejected' ? (
-              <Link to={`/articles/${revision.symptom_id}/edit`}>继续编辑</Link>
+              <Link to={`/articles/${revision.symptom_id}?edit=1`}>继续编辑</Link>
             ) : (
               <Link to={`/articles/${revision.symptom_id}`}>查看文档</Link>
             )}

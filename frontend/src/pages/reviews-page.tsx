@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
-  type ArticleRevision,
+  type ReviewQueueItem,
   approveRevision,
   articleKeys,
   listPendingReviews,
@@ -11,11 +11,20 @@ import {
 import { useCurrentUser } from '../api/auth'
 import { ApiError } from '../api/client'
 import { ErrorState, ListSkeleton } from '../components/request-state'
+import { RevisionDiff } from '../components/revision-diff'
 import styles from './workflow-page.module.css'
 
-function ReviewItem({ revision }: { revision: ArticleRevision }) {
+function ReviewItem({
+  item,
+  currentUserId,
+}: {
+  item: ReviewQueueItem
+  currentUserId: number
+}) {
+  const { revision, base_revision: baseRevision } = item
   const queryClient = useQueryClient()
   const [note, setNote] = useState('')
+  const isOwnRevision = revision.author_id === currentUserId
   const decision = useMutation({
     mutationFn: (action: 'approve' | 'reject') =>
       action === 'approve'
@@ -26,6 +35,9 @@ function ReviewItem({ revision }: { revision: ArticleRevision }) {
       void queryClient.invalidateQueries({
         queryKey: articleKeys.published(revision.symptom_id),
       })
+      void queryClient.invalidateQueries({
+        queryKey: articleKeys.versions(revision.symptom_id),
+      })
     },
   })
 
@@ -34,12 +46,21 @@ function ReviewItem({ revision }: { revision: ArticleRevision }) {
       <header>
         <div>
           <h2>{revision.title}</h2>
-          <p>贡献者：{revision.author_name}</p>
+          <p>
+            v{revision.version_number} · 修改者 {revision.author_name} · 提交于{' '}
+            {new Date(
+              revision.submitted_at ?? revision.updated_at,
+            ).toLocaleString('zh-CN')}
+          </p>
         </div>
         <Link to={`/articles/${revision.symptom_id}`}>查看当前版本</Link>
       </header>
-      <p className={styles.reviewSummary}>{revision.summary}</p>
-      <pre className={styles.reviewBody}>{revision.body}</pre>
+      <RevisionDiff baseRevision={baseRevision} revision={revision} />
+      {isOwnRevision ? (
+        <p className={styles.reviewGuard} role="note">
+          修改者不能审核自己的版本，请由其他审核员处理。
+        </p>
+      ) : null}
       <label>
         审核意见
         <textarea
@@ -58,7 +79,7 @@ function ReviewItem({ revision }: { revision: ArticleRevision }) {
         <button
           className={styles.secondaryButton}
           type="button"
-          disabled={decision.isPending}
+          disabled={decision.isPending || isOwnRevision}
           onClick={() => decision.mutate('reject')}
         >
           驳回
@@ -66,7 +87,7 @@ function ReviewItem({ revision }: { revision: ArticleRevision }) {
         <button
           className={styles.primaryButton}
           type="button"
-          disabled={decision.isPending}
+          disabled={decision.isPending || isOwnRevision}
           onClick={() => decision.mutate('approve')}
         >
           通过并发布
@@ -103,8 +124,12 @@ export default function ReviewsPage() {
       {reviews.isError ? <ErrorState description="审核队列加载失败。" /> : null}
       {reviews.data?.total === 0 ? <p className={styles.emptyText}>当前没有待审核版本。</p> : null}
       <ul className={styles.reviewList}>
-        {reviews.data?.items.map((revision) => (
-          <ReviewItem key={revision.id} revision={revision} />
+        {reviews.data?.items.map((item) => (
+          <ReviewItem
+            key={item.revision.id}
+            item={item}
+            currentUserId={currentUser.data?.id ?? 0}
+          />
         ))}
       </ul>
     </main>

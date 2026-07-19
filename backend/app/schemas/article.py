@@ -12,6 +12,7 @@ class ArticleDraftPayload(BaseModel):
     safety: str = Field(default="", max_length=2000)
     checklist: list[str] = Field(min_length=1, max_length=20)
     body: str = Field(min_length=20, max_length=50_000)
+    edit_summary: str = Field(default="", max_length=500)
 
     @field_validator("checklist")
     @classmethod
@@ -35,6 +36,10 @@ class ArticleRevisionItem(BaseModel):
     symptom_id: int
     author_id: int
     author_name: str
+    reviewer_id: int | None
+    reviewer_name: str | None
+    base_revision_id: int | None
+    version_number: int
     status: str
     title: str
     summary: str
@@ -42,13 +47,25 @@ class ArticleRevisionItem(BaseModel):
     safety: str
     checklist: list[str]
     body: str
+    edit_summary: str
     review_note: str
     created_at: datetime
     updated_at: datetime
     submitted_at: datetime | None
+    reviewed_at: datetime | None
     published_at: datetime | None
 
 
 class RevisionListResponse(BaseModel):
     items: list[ArticleRevisionItem]
+    total: int
+
+
+class ReviewQueueItem(BaseModel):
+    revision: ArticleRevisionItem
+    base_revision: ArticleRevisionItem | None
+
+
+class ReviewQueueResponse(BaseModel):
+    items: list[ReviewQueueItem]
     total: int

@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from peewee import fn
 
 from app.api.dependencies import get_current_user
 from app.db.database import database_connection
@@ -27,6 +28,12 @@ def serialize_revision(revision: ArticleRevision) -> ArticleRevisionItem:
         symptom_id=revision.symptom_id,
         author_id=revision.author_id,
         author_name=revision.author.username,
+        reviewer_id=revision.reviewer_id,
+        reviewer_name=(
+            revision.reviewer.username if revision.reviewer_id else None
+        ),
+        base_revision_id=revision.base_revision_id,
+        version_number=revision.version_number,
         status=revision.status,
         title=revision.title,
         summary=revision.summary,
@@ -34,10 +41,12 @@ def serialize_revision(revision: ArticleRevision) -> ArticleRevisionItem:
         safety=revision.safety,
         checklist=json.loads(revision.checklist_json),
         body=revision.body,
+        edit_summary=revision.edit_summary,
         review_note=revision.review_note,
         created_at=revision.created_at,
         updated_at=revision.updated_at,
         submitted_at=revision.submitted_at,
+        reviewed_at=revision.reviewed_at,
         published_at=revision.published_at,
     )
 
@@ -58,7 +67,7 @@ def list_my_revisions(
 ) -> RevisionListResponse:
     revisions = (
         ArticleRevision.select(ArticleRevision, User)
-        .join(User)
+        .join(User, on=(ArticleRevision.author == User.id))
         .where(ArticleRevision.author == current_user)
         .order_by(ArticleRevision.updated_at.desc())
     )
@@ -71,7 +80,7 @@ def get_published_article(symptom_id: int) -> ArticleRevisionItem:
     get_symptom_or_404(symptom_id)
     revision = (
         ArticleRevision.select(ArticleRevision, User)
-        .join(User)
+        .join(User, on=(ArticleRevision.author == User.id))
         .where(
             (ArticleRevision.symptom == symptom_id)
             & (ArticleRevision.status == "approved")
@@ -87,6 +96,22 @@ def get_published_article(symptom_id: int) -> ArticleRevisionItem:
     return serialize_revision(revision)
 
 
+@router.get("/{symptom_id}/revisions", response_model=RevisionListResponse)
+def list_published_revisions(symptom_id: int) -> RevisionListResponse:
+    get_symptom_or_404(symptom_id)
+    revisions = (
+        ArticleRevision.select(ArticleRevision, User)
+        .join(User, on=(ArticleRevision.author == User.id))
+        .where(
+            (ArticleRevision.symptom == symptom_id)
+            & (ArticleRevision.status.in_(("approved", "superseded")))
+        )
+        .order_by(ArticleRevision.version_number.desc())
+    )
+    items = [serialize_revision(revision) for revision in revisions]
+    return RevisionListResponse(items=items, total=len(items))
+
+
 @router.get("/{symptom_id}/draft", response_model=ArticleRevisionItem)
 def get_draft(
     symptom_id: int,
@@ -95,7 +120,7 @@ def get_draft(
     get_symptom_or_404(symptom_id)
     revision = (
         ArticleRevision.select(ArticleRevision, User)
-        .join(User)
+        .join(User, on=(ArticleRevision.author == User.id))
         .where(
             (ArticleRevision.symptom == symptom_id)
             & (ArticleRevision.author == current_user)
@@ -124,7 +149,7 @@ def save_draft(
         .where(
             (ArticleRevision.symptom == symptom)
             & (ArticleRevision.author == current_user)
-            & (ArticleRevision.status.in_(("draft", "rejected")))
+            & (ArticleRevision.status == "draft")
         )
         .order_by(ArticleRevision.updated_at.desc())
         .first()
@@ -136,14 +161,33 @@ def save_draft(
         "safety": payload.safety,
         "checklist_json": json.dumps(payload.checklist, ensure_ascii=False),
         "body": payload.body,
+        "edit_summary": payload.edit_summary,
         "status": "draft",
         "review_note": "",
         "updated_at": datetime.now(),
     }
     if revision is None:
+        base_revision = (
+            ArticleRevision.select()
+            .where(
+                (ArticleRevision.symptom == symptom)
+                & (ArticleRevision.status == "approved")
+            )
+            .order_by(ArticleRevision.published_at.desc())
+            .first()
+        )
+        next_version = (
+            ArticleRevision.select(
+                fn.COALESCE(fn.MAX(ArticleRevision.version_number), 0) + 1
+            )
+            .where(ArticleRevision.symptom == symptom)
+            .scalar()
+        )
         revision = ArticleRevision.create(
             symptom=symptom,
             author=current_user,
+            base_revision=base_revision,
+            version_number=next_version,
             **values,
         )
     else:
@@ -163,7 +207,7 @@ def submit_draft(
 ) -> ArticleRevisionItem:
     revision = (
         ArticleRevision.select(ArticleRevision, User)
-        .join(User)
+        .join(User, on=(ArticleRevision.author == User.id))
         .where(
             (ArticleRevision.symptom == symptom_id)
             & (ArticleRevision.author == current_user)
@@ -176,6 +220,43 @@ def submit_draft(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="请先保存草稿",
+        )
+
+    if not revision.edit_summary.strip():
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="提交审核前请填写修改说明",
+        )
+
+    current_published = (
+        ArticleRevision.select()
+        .where(
+            (ArticleRevision.symptom == symptom_id)
+            & (ArticleRevision.status == "approved")
+        )
+        .order_by(ArticleRevision.published_at.desc())
+        .first()
+    )
+    current_published_id = current_published.id if current_published else None
+    if revision.base_revision_id != current_published_id:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="公开版本已经更新，请重新载入并合并修改",
+        )
+
+    other_pending = (
+        ArticleRevision.select()
+        .where(
+            (ArticleRevision.symptom == symptom_id)
+            & (ArticleRevision.status == "pending")
+            & (ArticleRevision.id != revision.id)
+        )
+        .exists()
+    )
+    if other_pending:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="这个条目已有待审核修改，请等待处理后再提交",
         )
 
     now = datetime.now()

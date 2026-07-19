@@ -7,6 +7,7 @@ export type ArticleDraft = {
   safety: string
   checklist: string[]
   body: string
+  edit_summary: string
 }
 
 export type ArticleRevision = ArticleDraft & {
@@ -14,11 +15,16 @@ export type ArticleRevision = ArticleDraft & {
   symptom_id: number
   author_id: number
   author_name: string
+  reviewer_id: number | null
+  reviewer_name: string | null
+  base_revision_id: number | null
+  version_number: number
   status: 'draft' | 'pending' | 'approved' | 'rejected' | 'superseded'
   review_note: string
   created_at: string
   updated_at: string
   submitted_at: string | null
+  reviewed_at: string | null
   published_at: string | null
 }
 
@@ -27,8 +33,19 @@ export type RevisionListResponse = {
   total: number
 }
 
+export type ReviewQueueItem = {
+  revision: ArticleRevision
+  base_revision: ArticleRevision | null
+}
+
+export type ReviewQueueResponse = {
+  items: ReviewQueueItem[]
+  total: number
+}
+
 export const articleKeys = {
   published: (symptomId: number) => ['articles', symptomId, 'published'] as const,
+  versions: (symptomId: number) => ['articles', symptomId, 'versions'] as const,
   draft: (symptomId: number) => ['articles', symptomId, 'draft'] as const,
   mine: ['articles', 'mine'] as const,
   reviews: ['reviews'] as const,
@@ -36,6 +53,16 @@ export const articleKeys = {
 
 export function getPublishedArticle(symptomId: number, signal?: AbortSignal) {
   return apiRequest<ArticleRevision>(`/articles/${symptomId}`, { signal })
+}
+
+export function listPublishedRevisions(
+  symptomId: number,
+  signal?: AbortSignal,
+) {
+  return apiRequest<RevisionListResponse>(
+    `/articles/${symptomId}/revisions`,
+    { signal },
+  )
 }
 
 export function getDraft(symptomId: number, signal?: AbortSignal) {
@@ -60,7 +87,7 @@ export function listMyRevisions(signal?: AbortSignal) {
 }
 
 export function listPendingReviews(signal?: AbortSignal) {
-  return apiRequest<RevisionListResponse>('/reviews', { signal })
+  return apiRequest<ReviewQueueResponse>('/reviews', { signal })
 }
 
 export function approveRevision(revisionId: number, note: string) {

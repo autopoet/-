@@ -11,7 +11,8 @@ from app.models.user import User
 from app.schemas.article import (
     ArticleRevisionItem,
     ReviewDecision,
-    RevisionListResponse,
+    ReviewQueueItem,
+    ReviewQueueResponse,
 )
 
 router = APIRouter(
@@ -23,7 +24,7 @@ router = APIRouter(
 def get_pending_revision(revision_id: int) -> ArticleRevision:
     revision = (
         ArticleRevision.select(ArticleRevision, User)
-        .join(User)
+        .join(User, on=(ArticleRevision.author == User.id))
         .where(
             (ArticleRevision.id == revision_id)
             & (ArticleRevision.status == "pending")
@@ -38,27 +39,49 @@ def get_pending_revision(revision_id: int) -> ArticleRevision:
     return revision
 
 
-@router.get("", response_model=RevisionListResponse)
+def serialize_review_item(revision: ArticleRevision) -> ReviewQueueItem:
+    base_revision = (
+        ArticleRevision.select(ArticleRevision, User)
+        .join(User, on=(ArticleRevision.author == User.id))
+        .where(ArticleRevision.id == revision.base_revision_id)
+        .first()
+        if revision.base_revision_id
+        else None
+    )
+    return ReviewQueueItem(
+        revision=serialize_revision(revision),
+        base_revision=(
+            serialize_revision(base_revision) if base_revision else None
+        ),
+    )
+
+
+@router.get("", response_model=ReviewQueueResponse)
 def list_pending_reviews(
     _: Annotated[User, Depends(get_reviewer)],
-) -> RevisionListResponse:
+) -> ReviewQueueResponse:
     revisions = (
         ArticleRevision.select(ArticleRevision, User)
-        .join(User)
+        .join(User, on=(ArticleRevision.author == User.id))
         .where(ArticleRevision.status == "pending")
         .order_by(ArticleRevision.submitted_at)
     )
-    items = [serialize_revision(revision) for revision in revisions]
-    return RevisionListResponse(items=items, total=len(items))
+    items = [serialize_review_item(revision) for revision in revisions]
+    return ReviewQueueResponse(items=items, total=len(items))
 
 
 @router.post("/{revision_id}/approve", response_model=ArticleRevisionItem)
 def approve_revision(
     revision_id: int,
     payload: ReviewDecision,
-    _: Annotated[User, Depends(get_reviewer)],
+    reviewer: Annotated[User, Depends(get_reviewer)],
 ) -> ArticleRevisionItem:
     revision = get_pending_revision(revision_id)
+    if revision.author_id == reviewer.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="审核员不能审核自己提交的版本",
+        )
     now = datetime.now()
     with database.atomic():
         (
@@ -70,7 +93,9 @@ def approve_revision(
             .execute()
         )
         revision.status = "approved"
+        revision.reviewer = reviewer
         revision.review_note = payload.note
+        revision.reviewed_at = now
         revision.published_at = now
         revision.updated_at = now
         revision.save()
@@ -81,7 +106,7 @@ def approve_revision(
 def reject_revision(
     revision_id: int,
     payload: ReviewDecision,
-    _: Annotated[User, Depends(get_reviewer)],
+    reviewer: Annotated[User, Depends(get_reviewer)],
 ) -> ArticleRevisionItem:
     if not payload.note:
         raise HTTPException(
@@ -89,8 +114,15 @@ def reject_revision(
             detail="驳回时必须填写原因",
         )
     revision = get_pending_revision(revision_id)
+    if revision.author_id == reviewer.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="审核员不能审核自己提交的版本",
+        )
     revision.status = "rejected"
+    revision.reviewer = reviewer
     revision.review_note = payload.note
-    revision.updated_at = datetime.now()
+    revision.reviewed_at = datetime.now()
+    revision.updated_at = revision.reviewed_at
     revision.save()
     return serialize_revision(revision)

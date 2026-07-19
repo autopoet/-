@@ -13,10 +13,21 @@ import {
   useRef,
   useState,
 } from 'react'
-import { Link, useParams } from 'react-router-dom'
-import { articleKeys, getPublishedArticle } from '../api/articles'
+import {
+  Link,
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from 'react-router-dom'
+import {
+  articleKeys,
+  getPublishedArticle,
+  listPublishedRevisions,
+} from '../api/articles'
+import { useCurrentUser } from '../api/auth'
 import { ApiError } from '../api/client'
 import { getSymptom, symptomKeys } from '../api/symptoms'
+import { InlineArticleEditor } from '../components/inline-article-editor'
 import { EmptyState, ErrorState, ListSkeleton } from '../components/request-state'
 import {
   type ArticleSection,
@@ -219,10 +230,15 @@ function ArticleSectionContent({ section }: { section: ArticleSection }) {
 export default function ArticlePage() {
   const { articleId = '' } = useParams()
   const numericArticleId = Number(articleId)
+  const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const editRequested = searchParams.get('edit') === '1'
+  const submitted = searchParams.get('submitted') === '1'
   const validArticleId =
     Number.isInteger(numericArticleId) && numericArticleId > 0
   const commentsDialogRef = useRef<HTMLDialogElement>(null)
   const lastCommentTriggerRef = useRef<HTMLButtonElement | null>(null)
+  const currentUser = useCurrentUser()
 
   const symptomQuery = useQuery({
     queryKey: symptomKeys.detail(numericArticleId),
@@ -234,6 +250,12 @@ export default function ArticlePage() {
     queryFn: ({ signal }) => getPublishedArticle(numericArticleId, signal),
     enabled: validArticleId,
     retry: false,
+  })
+  const versionsQuery = useQuery({
+    queryKey: articleKeys.versions(numericArticleId),
+    queryFn: ({ signal }) =>
+      listPublishedRevisions(numericArticleId, signal),
+    enabled: validArticleId && Boolean(publishedQuery.data),
   })
 
   const article = useMemo(
@@ -266,6 +288,31 @@ export default function ArticlePage() {
 
   function closeComments() {
     commentsDialogRef.current?.close()
+  }
+
+  function startEditing() {
+    if (!currentUser.data) {
+      const returnTo = `/articles/${numericArticleId}?edit=1`
+      navigate(`/login?from=${encodeURIComponent(returnTo)}`)
+      return
+    }
+    const next = new URLSearchParams(searchParams)
+    next.set('edit', '1')
+    next.delete('submitted')
+    setSearchParams(next)
+  }
+
+  function stopEditing() {
+    const next = new URLSearchParams(searchParams)
+    next.delete('edit')
+    setSearchParams(next)
+  }
+
+  function finishSubmission() {
+    const next = new URLSearchParams(searchParams)
+    next.delete('edit')
+    next.set('submitted', '1')
+    setSearchParams(next)
   }
 
   if (!validArticleId) {
@@ -312,6 +359,66 @@ export default function ArticlePage() {
     return null
   }
 
+  if (editRequested) {
+    if (currentUser.isPending) {
+      return (
+        <main id="main-content" className={styles.statePage}>
+          <ListSkeleton rows={4} />
+        </main>
+      )
+    }
+
+    if (!currentUser.data) {
+      const returnTo = `/articles/${numericArticleId}?edit=1`
+      return (
+        <main id="main-content" className={styles.statePage}>
+          <EmptyState
+            title="登录后编辑"
+            description="公开内容可以直接阅读，修改内容需要登录并经过审核。"
+            action={
+              <Link
+                className={styles.backLink}
+                to={`/login?from=${encodeURIComponent(returnTo)}`}
+              >
+                前往登录
+              </Link>
+            }
+          />
+        </main>
+      )
+    }
+
+    return (
+      <main id="main-content" className={`${styles.page} ${styles.editingPage}`}>
+        <aside className={styles.outline}>
+          <span className={styles.outlineTitle}>当前状态</span>
+          <p className={styles.editingHint}>
+            修改会先保存为草稿，提交并审核通过后才会替换公开版本。
+          </p>
+        </aside>
+        <article className={styles.document}>
+          <div className={styles.breadcrumb}>
+            <Link to="/explore">知识库</Link>
+            <ChevronRight aria-hidden="true" size={15} />
+            <button type="button" onClick={stopEditing}>
+              {symptomQuery.data.name}
+            </button>
+            <ChevronRight aria-hidden="true" size={15} />
+            <span>编辑</span>
+          </div>
+          <InlineArticleEditor
+            symptomId={numericArticleId}
+            symptomName={symptomQuery.data.name}
+            symptomDescription={symptomQuery.data.description}
+            publishedRevision={publishedQuery.data}
+            onCancel={stopEditing}
+            onSubmitted={finishSubmission}
+          />
+        </article>
+      </main>
+    )
+  }
+
   if (!article) {
     return (
       <main id="main-content" className={styles.statePage}>
@@ -324,12 +431,9 @@ export default function ArticlePage() {
           title="这个主题还没有完整排查文档"
           description="故障现象已经收录，正文将在贡献和审核流程完成后公开。"
           action={
-            <Link
-              className={styles.backLink}
-              to={`/articles/${numericArticleId}/edit`}
-            >
+            <button className={styles.backLink} type="button" onClick={startEditing}>
               开始编写
-            </Link>
+            </button>
           }
         />
       </main>
@@ -372,6 +476,11 @@ export default function ArticlePage() {
         </aside>
 
         <article className={styles.document}>
+          {submitted ? (
+            <p className={styles.submittedNotice} role="status">
+              修改已提交审核；公开内容会在审核通过后更新。
+            </p>
+          ) : null}
           <div className={styles.breadcrumb}>
             <Link to="/explore">知识库</Link>
             <ChevronRight aria-hidden="true" size={15} />
@@ -380,13 +489,15 @@ export default function ArticlePage() {
 
           <header className={styles.articleHeader}>
             <div className={styles.headerActions}>
-              <Link
+              <button
                 className={styles.editButton}
-                to={`/articles/${numericArticleId}/edit`}
+                type="button"
+                disabled={currentUser.isPending}
+                onClick={startEditing}
               >
                 <PencilLine aria-hidden="true" size={17} />
                 编辑
-              </Link>
+              </button>
               <button
                 className={styles.inlineCommentButton}
                 type="button"
@@ -403,15 +514,55 @@ export default function ArticlePage() {
               {publishedQuery.data?.summary ?? symptomQuery.data.description}
             </p>
             {publishedQuery.data ? (
-              <div className={styles.metadata}>
-                <span>
-                  已审核 · {publishedQuery.data.author_name} ·{' '}
-                  {new Date(
-                    publishedQuery.data.published_at ??
-                      publishedQuery.data.updated_at,
-                  ).toLocaleDateString('zh-CN')}
-                </span>
-              </div>
+              <>
+                <div className={styles.metadata}>
+                  <span>v{publishedQuery.data.version_number}</span>
+                  <span>修改者 {publishedQuery.data.author_name}</span>
+                  <span>
+                    审核者 {publishedQuery.data.reviewer_name ?? '—'}
+                  </span>
+                  <span>
+                    {new Date(
+                      publishedQuery.data.reviewed_at ??
+                        publishedQuery.data.published_at ??
+                        publishedQuery.data.updated_at,
+                    ).toLocaleDateString('zh-CN')}
+                  </span>
+                </div>
+                {versionsQuery.data?.items.length ? (
+                  <details className={styles.versionHistory}>
+                    <summary>
+                      版本历史（{versionsQuery.data.total}）
+                    </summary>
+                    <ol>
+                      {versionsQuery.data.items.map((revision) => (
+                        <li key={revision.id}>
+                          <strong>v{revision.version_number}</strong>
+                          <div>
+                            <span>
+                              {revision.author_name} 修改于{' '}
+                              {new Date(
+                                revision.submitted_at ?? revision.updated_at,
+                              ).toLocaleString('zh-CN')}
+                            </span>
+                            <span>
+                              {revision.reviewer_name ?? '—'} 审核于{' '}
+                              {revision.reviewed_at
+                                ? new Date(
+                                    revision.reviewed_at,
+                                  ).toLocaleString('zh-CN')
+                                : '—'}
+                            </span>
+                            {revision.edit_summary ? (
+                              <p>{revision.edit_summary}</p>
+                            ) : null}
+                          </div>
+                        </li>
+                      ))}
+                    </ol>
+                  </details>
+                ) : null}
+              </>
             ) : null}
           </header>
 

@@ -103,6 +103,15 @@
   border-radius: var(--radius-control);
 }
 
+.editButton {
+  cursor: pointer;
+}
+
+.editButton:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
+
 .inlineCommentButton {
   cursor: pointer;
 }
@@ -149,6 +158,76 @@
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
+}
+
+.versionHistory {
+  margin-top: var(--space-5);
+  font-size: var(--text-meta);
+}
+
+.versionHistory summary {
+  width: fit-content;
+  color: var(--color-accent);
+  cursor: pointer;
+}
+
+.versionHistory ol {
+  max-width: 42rem;
+  padding: var(--space-3) 0 0;
+  margin: 0;
+  list-style: none;
+  border-top: 1px solid var(--color-border);
+}
+
+.versionHistory li {
+  display: grid;
+  grid-template-columns: 2.5rem minmax(0, 1fr);
+  gap: var(--space-3);
+  padding-block: var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.versionHistory li div {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  color: var(--color-muted);
+}
+
+.versionHistory p {
+  margin: var(--space-1) 0 0;
+  color: var(--color-text);
+}
+
+.submittedNotice {
+  padding: var(--space-3) var(--space-4);
+  margin: 0 0 var(--space-5);
+  color: var(--color-accent);
+  font-size: var(--text-meta);
+  background: var(--color-accent-soft);
+  border-left: 3px solid var(--color-accent);
+}
+
+.editingPage {
+  grid-template-columns: 13rem minmax(0, 50rem);
+}
+
+.editingHint {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: var(--text-meta);
+  line-height: 1.7;
+}
+
+.breadcrumb button {
+  padding: 0;
+  color: inherit;
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
 }
 
 .mobileOutline {
