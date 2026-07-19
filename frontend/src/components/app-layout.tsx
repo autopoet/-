@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
+import { SiteFooter } from './site-footer'
 import { SiteHeader } from './site-header'
 
 export function AppLayout() {
@@ -47,6 +48,7 @@ export function AppLayout() {
       </a>
       <SiteHeader />
       <Outlet />
+      <SiteFooter />
     </>
   )
 }

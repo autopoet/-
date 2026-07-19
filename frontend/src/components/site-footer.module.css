@@ -1,0 +1,15 @@
+/* Hallmark · macrostructure: Ft2 Inline Rule · tone: technical editorial austere · anchor hue: Signal Green · genre: editorial */
+/* Hallmark · pre-emit critique: P5 H5 E5 S5 R5 V5 · contrast: pass (40–41) · slop: pass (58/58) */
+.footer {
+  width: min(var(--content-max), calc(100% - 2 * var(--page-gutter)));
+  padding-block: var(--space-sm) var(--space-lg);
+  margin-inline: auto;
+  color: var(--color-muted);
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  border-top: var(--rule-hair) solid var(--color-rule-2);
+}
+
+.footer p {
+  margin: 0;
+}

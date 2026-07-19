@@ -36,16 +36,20 @@ export default function ExplorePage() {
   return (
     <main id="main-content" className={styles.page}>
       <header className={styles.pageHeader}>
-        <h1>{keyword ? `“${keyword.slice(0, 20)}”的搜索结果` : '知识库'}</h1>
+        <div>
+          <h1>
+            {keyword ? `“${keyword.slice(0, 20)}”的搜索结果` : '故障现象索引'}
+          </h1>
+          {keywordIsValid && symptomsQuery.data ? (
+            <span aria-live="polite">{symptomsQuery.data.total} 条记录</span>
+          ) : null}
+        </div>
         <SearchForm initialValue={keyword} variant="page" showSuggestions={false} />
       </header>
 
       <section className={styles.results} aria-labelledby="results-title">
         <div className={styles.resultsHeader}>
-          <h2 id="results-title">{keyword ? '匹配结果' : '全部故障现象'}</h2>
-          {keywordIsValid && symptomsQuery.data ? (
-            <span aria-live="polite">共 {symptomsQuery.data.total} 条</span>
-          ) : null}
+          <h2 id="results-title">{keyword ? '匹配条目' : '全部条目'}</h2>
         </div>
 
         {!keywordIsValid ? (
@@ -69,9 +73,12 @@ export default function ExplorePage() {
         ) : null}
         {symptomsQuery.data?.items.length ? (
           <ul className={styles.resultList}>
-            {symptomsQuery.data.items.map((symptom) => (
+            {symptomsQuery.data.items.map((symptom, index) => (
               <li key={symptom.id}>
                 <Link className={styles.resultLink} to={`/articles/${symptom.id}`}>
+                  <span className={styles.resultIndex}>
+                    {String(index + 1).padStart(2, '0')}
+                  </span>
                   <div>
                     <h3>
                       <HighlightedText text={symptom.name} keyword={keyword} />

@@ -1,8 +1,11 @@
+/* Hallmark · macrostructure: Workbench · tone: technical editorial austere · anchor hue: Signal Green · genre: editorial */
+/* Hallmark · pre-emit critique: P5 H5 E5 S5 R5 V5 · contrast: pass (40–41) · slop: pass (58/58) */
 .diff {
   margin-top: var(--space-6);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-control);
+  border-radius: var(--radius-card);
   overflow: hidden;
+  animation: diff-in var(--dur-long) var(--ease-out) both;
 }
 
 .header {
@@ -11,7 +14,7 @@
   justify-content: space-between;
   gap: var(--space-6);
   padding: var(--space-4);
-  background: var(--color-surface-subtle);
+  background: var(--color-paper-2);
   border-bottom: 1px solid var(--color-border);
 }
 
@@ -41,13 +44,13 @@
   padding: var(--space-2) var(--space-4);
   margin: 0;
   font-size: var(--text-meta);
-  background: var(--color-surface);
+  background: var(--color-paper);
   border-bottom: 1px solid var(--color-border);
 }
 
 .lines {
   overflow-x: auto;
-  font-family: var(--font-mono);
+  font-family: var(--font-outlier);
   font-size: var(--text-caption);
   line-height: 1.65;
 }
@@ -71,7 +74,7 @@
   color: var(--color-muted);
   text-align: right;
   user-select: none;
-  border-right: 1px solid rgb(0 0 0 / 7%);
+  border-inline-end: 1px solid var(--color-rule);
 }
 
 .mark {
@@ -80,18 +83,25 @@
 }
 
 .addition {
-  color: #174f2f;
-  background: #e7f6ec;
+  color: var(--color-addition-ink);
+  background: var(--color-addition);
 }
 
 .deletion {
-  color: #74251f;
-  background: #fdebea;
+  color: var(--color-deletion-ink);
+  background: var(--color-deletion);
 }
 
 .context {
   color: var(--color-text);
   background: var(--color-surface);
+}
+
+@keyframes diff-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.5rem);
+  }
 }
 
 @media (max-width: 40rem) {

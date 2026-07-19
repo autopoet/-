@@ -34,7 +34,7 @@ export default function SubmissionsPage() {
     <main id="main-content" className={styles.listPage}>
       <header className={styles.pageTitle}>
         <h1>我的提交</h1>
-        <p>草稿、待审核版本和审核结果都会保留在这里。</p>
+        <p>草稿、待审核与已发布版本。</p>
       </header>
       {revisions.isLoading ? <ListSkeleton rows={4} /> : null}
       {revisions.isError ? <ErrorState description="提交记录加载失败。" /> : null}

@@ -1,0 +1,52 @@
+{
+  "project": "电赛白皮书",
+  "date": "2026-07-20",
+  "scope": "app",
+  "framework": "React 19 + TypeScript + Vite",
+  "routing": "React Router",
+  "styling": "CSS Modules with global design tokens",
+  "dependencies": {
+    "icons": "lucide-react",
+    "motion": "CSS only",
+    "data": "@tanstack/react-query"
+  },
+  "audience": [
+    "电子设计竞赛学生",
+    "知识贡献者",
+    "审核员"
+  ],
+  "primaryUse": "从可观察的故障现象开始排查，并在公开审核流程中沉淀可信文档",
+  "tone": [
+    "technical",
+    "editorial",
+    "austere"
+  ],
+  "selectedSystem": {
+    "theme": "Technical Editorial / Signal Green",
+    "navigation": "N6 Newspaper Masthead, compact product adaptation",
+    "footer": "Ft2 Inline-rule single line",
+    "pages": {
+      "home": "Ecosystem Index",
+      "explore": "Index-First",
+      "article": "Long Document",
+      "workflow": "Workbench"
+    }
+  },
+  "audit": [
+    "首页与知识库共用标题、搜索框、线性列表，页面任务不清晰",
+    "全站顶栏接近通用 SaaS 导航，不能表达技术出版物属性",
+    "搜索框强调按钮与外框重复，视觉重量过大",
+    "十六进制颜色和单一无衬线字体削弱系统感",
+    "卡片、圆角与解释性副标题使用偏多",
+    "动效覆盖面不足，但后续仍需控制在每页三种原语以内",
+    "html/body 横向溢出策略需要改为 clip",
+    "Diff 和波形存在未纳入 token 的临时颜色"
+  ],
+  "constraints": [
+    "不改变后端接口",
+    "保留行内编辑、版本责任信息和审核 Diff",
+    "不引入动效依赖",
+    "支持 320、375、414、768 CSS 像素宽度",
+    "尊重 prefers-reduced-motion"
+  ]
+}

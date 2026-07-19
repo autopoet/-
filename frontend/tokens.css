@@ -1,0 +1,132 @@
+/* Hallmark · macrostructure: multi-page system · tone: technical editorial austere · anchor hue: Signal Green · genre: editorial */
+/* Hallmark · pre-emit critique: P5 H5 E5 S5 R5 V5 · contrast: pass (40–41) · slop: pass (58/58) */
+:root {
+  color: oklch(22% 0.025 155);
+  background: oklch(97.5% 0.009 150);
+  font-family:
+    "Noto Sans SC", "Source Han Sans SC", "PingFang SC", "Microsoft YaHei",
+    ui-sans-serif, system-ui, sans-serif;
+  font-synthesis: none;
+  font-kerning: normal;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  --color-paper: oklch(97.5% 0.009 150);
+  --color-paper-2: oklch(94.5% 0.014 150);
+  --color-paper-3: oklch(91% 0.018 150);
+  --color-surface: oklch(99% 0.004 150);
+  --color-ink: oklch(22% 0.025 155);
+  --color-ink-2: oklch(30% 0.024 155);
+  --color-neutral: oklch(38% 0.022 155);
+  --color-muted: oklch(47% 0.019 155);
+  --color-rule: oklch(86% 0.018 150);
+  --color-rule-2: oklch(68% 0.025 150);
+  --color-accent: oklch(46% 0.115 151);
+  --color-accent-hover: oklch(41% 0.112 151);
+  --color-accent-active: oklch(36% 0.102 151);
+  --color-accent-ink: oklch(98% 0.008 150);
+  --color-accent-soft: oklch(92.5% 0.035 151);
+  --color-focus: oklch(12% 0.02 151);
+  --color-warning: oklch(48% 0.12 60);
+  --color-warning-soft: oklch(94% 0.035 70);
+  --color-danger: oklch(48% 0.15 28);
+  --color-danger-soft: oklch(94% 0.03 28);
+  --color-addition: oklch(93% 0.035 151);
+  --color-addition-ink: oklch(32% 0.075 151);
+  --color-deletion: oklch(93% 0.032 28);
+  --color-deletion-ink: oklch(37% 0.095 28);
+  --color-code: oklch(19% 0.022 155);
+  --color-code-grid: oklch(51% 0.025 155);
+  --color-code-signal: oklch(82% 0.12 151);
+  --color-code-secondary: oklch(79% 0.1 83);
+  --color-selection: oklch(88% 0.06 151);
+  --color-overlay: oklch(18% 0.02 155 / 24%);
+
+  --font-display:
+    "Noto Serif SC", "Source Han Serif SC", "Songti SC", STSong, ui-serif,
+    serif;
+  --font-body:
+    "Noto Sans SC", "Source Han Sans SC", "PingFang SC", "Microsoft YaHei",
+    ui-sans-serif, system-ui, sans-serif;
+  --font-outlier:
+    "JetBrains Mono", "IBM Plex Mono", "SFMono-Regular", Consolas,
+    ui-monospace, monospace;
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-md: 1rem;
+  --text-lg: 1.25rem;
+  --text-xl: 1.563rem;
+  --text-2xl: 1.953rem;
+  --text-display: clamp(2.25rem, 5vw, 3.815rem);
+
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+
+  --space-3xs: 0.25rem;
+  --space-2xs: 0.5rem;
+  --space-xs: 0.75rem;
+  --space-sm: 1rem;
+  --space-md: 1.5rem;
+  --space-lg: 2rem;
+  --space-xl: 3rem;
+  --space-2xl: 4.5rem;
+  --space-3xl: 7rem;
+  --space-4xl: 11rem;
+
+  --rule-hair: 1px;
+  --rule-fine: 2px;
+  --radius-card: 0.25rem;
+  --radius-input: 0.25rem;
+  --radius-pill: 999px;
+  --shadow-float: 0 1rem 2.5rem oklch(18% 0.02 155 / 12%);
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-micro: 120ms;
+  --dur-short: 220ms;
+  --dur-long: 420ms;
+
+  --page-gutter: clamp(1rem, 4vw, 3rem);
+  --content-max: 72rem;
+  --article-max: 43rem;
+  --header-height: 8.25rem;
+  --z-sticky: 20;
+  --z-dropdown: 30;
+  --z-modal: 40;
+
+  /* Compatibility aliases while feature styles migrate to the canonical roles. */
+  --font-sans: var(--font-body);
+  --font-mono: var(--font-outlier);
+  --color-canvas: var(--color-paper);
+  --color-surface-subtle: var(--color-paper-2);
+  --color-text: var(--color-neutral);
+  --color-border: var(--color-rule);
+  --color-border-strong: var(--color-rule-2);
+  --color-control-border: var(--color-rule-2);
+  --text-caption: var(--text-xs);
+  --text-meta: var(--text-sm);
+  --text-body: var(--text-md);
+  --text-component: var(--text-lg);
+  --text-section: var(--text-xl);
+  --text-page: var(--text-2xl);
+  --space-1: var(--space-3xs);
+  --space-2: var(--space-2xs);
+  --space-3: var(--space-xs);
+  --space-4: var(--space-sm);
+  --space-5: 1.25rem;
+  --space-6: var(--space-md);
+  --space-8: var(--space-lg);
+  --space-10: 2.5rem;
+  --space-12: var(--space-xl);
+  --space-16: 4rem;
+  --space-24: 6rem;
+  --radius-control: var(--radius-input);
+  --radius-panel: var(--radius-card);
+  --duration-fast: var(--dur-micro);
+  --duration-normal: var(--dur-short);
+}

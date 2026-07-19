@@ -16,6 +16,7 @@ type SearchFormProps = {
   variant?: 'hero' | 'page'
   showSuggestions?: boolean
   autoFocus?: boolean
+  hint?: string
 }
 
 function useDebouncedValue(value: string, delay: number) {
@@ -34,6 +35,7 @@ export function SearchForm({
   variant = 'page',
   showSuggestions = true,
   autoFocus = false,
+  hint = '',
 }: SearchFormProps) {
   const navigate = useNavigate()
   const listboxId = useId()
@@ -152,7 +154,7 @@ export function SearchForm({
             activeIndex >= 0 ? `${listboxId}-option-${activeIndex}` : undefined
           }
           aria-describedby={
-            validationMessage ? `${listboxId}-error` : undefined
+            validationMessage || hint ? `${listboxId}-helper` : undefined
           }
           onChange={(event) => {
             setValue(event.target.value)
@@ -185,22 +187,25 @@ export function SearchForm({
         <button
           className={styles.submitButton}
           type="submit"
-          aria-label="搜索"
         >
-          <Search aria-hidden="true" size={18} />
-          <span>搜索</span>
+          <span>查找</span>
         </button>
       </div>
 
-      {validationMessage ? (
-        <p
-          id={`${listboxId}-error`}
-          className={styles.validation}
-          role="alert"
-        >
-          {validationMessage}
-        </p>
-      ) : null}
+      <span className="sr-only" aria-live="polite">
+        {suggestionPanelOpen && suggestionQuery.isSuccess
+          ? `${suggestions.length} 条搜索建议`
+          : ''}
+      </span>
+
+      <p
+        id={`${listboxId}-helper`}
+        className={styles.validation}
+        data-error={validationMessage ? 'true' : 'false'}
+        role={validationMessage ? 'alert' : undefined}
+      >
+        {validationMessage || hint || '\u00A0'}
+      </p>
 
       {suggestionPanelOpen ? (
         <div className={styles.suggestions} id={listboxId} role="listbox">

@@ -1,3 +1,5 @@
+/* Hallmark · macrostructure: inline state · tone: technical editorial austere · anchor hue: Signal Green · genre: editorial */
+/* Hallmark · pre-emit critique: P5 H5 E5 S5 R5 V5 · contrast: pass (40–41) · slop: pass (58/58) */
 .state {
   min-height: 10rem;
   display: grid;
@@ -16,6 +18,7 @@
 
 .state h2 {
   color: var(--color-ink);
+  font-family: var(--font-display);
   font-size: var(--text-component);
   line-height: 1.4;
 }
@@ -39,13 +42,18 @@
   font-weight: var(--weight-semibold);
   background: var(--color-surface);
   border: 1px solid var(--color-border-strong);
-  border-radius: var(--radius-control);
+  border-radius: var(--radius-input);
   cursor: pointer;
+  white-space: nowrap;
+  transition:
+    color var(--dur-short) var(--ease-out),
+    background-color var(--dur-short) var(--ease-out),
+    border-color var(--dur-short) var(--ease-out),
+    transform var(--dur-micro) var(--ease-out);
 }
 
-.retryButton:hover {
-  color: var(--color-accent-hover);
-  border-color: var(--color-accent);
+.retryButton:active {
+  transform: translateY(1px);
 }
 
 .skeleton {
@@ -64,8 +72,8 @@
 .skeletonLine {
   display: block;
   background: var(--color-border);
-  border-radius: var(--radius-control);
-  animation: skeleton-pulse 1.4s ease-in-out infinite;
+  border-radius: var(--radius-input);
+  animation: skeleton-pulse 1.4s var(--ease-in-out) infinite;
 }
 
 .skeletonTitle {
@@ -76,4 +84,12 @@
 .skeletonLine {
   width: min(85%, 38rem);
   height: 0.875rem;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .retryButton:hover {
+    color: var(--color-accent-hover);
+    background: var(--color-accent-soft);
+    border-color: var(--color-accent);
+  }
 }

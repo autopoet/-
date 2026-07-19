@@ -54,38 +54,40 @@ export function SiteHeader() {
   return (
     <header className={styles.header}>
       <div className={styles.inner}>
-        <Link className={styles.brand} to="/" aria-label="电赛白皮书首页">
-          <BookOpenText aria-hidden="true" size={24} strokeWidth={1.8} />
-          <span>电赛白皮书</span>
-        </Link>
+        <div className={styles.masthead}>
+          <Link className={styles.brand} to="/" aria-label="电赛白皮书首页">
+            <BookOpenText aria-hidden="true" size={22} strokeWidth={1.6} />
+            <span>电赛白皮书</span>
+          </Link>
+          <button
+            className={styles.menuButton}
+            type="button"
+            aria-expanded={menuOpen}
+            aria-controls="mobile-navigation"
+            aria-label={menuOpen ? '关闭导航' : '打开导航'}
+            onClick={() => setMenuOpen((current) => !current)}
+          >
+            {menuOpen ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}
+          </button>
+        </div>
 
-        <nav className={styles.desktopNav} aria-label="主导航">
-          {navigation.map((item) => (
-            <NavLink
-              key={item.to}
-              className={({ isActive }) =>
-                `${styles.navLink} ${isActive ? styles.navLinkActive : ''}`
-              }
-              end={item.end}
-              to={item.to}
-            >
-              {item.label}
-            </NavLink>
-          ))}
-        </nav>
-
-        <div className={styles.account}>{accountLinks}</div>
-
-        <button
-          className={styles.menuButton}
-          type="button"
-          aria-expanded={menuOpen}
-          aria-controls="mobile-navigation"
-          aria-label={menuOpen ? '关闭导航' : '打开导航'}
-          onClick={() => setMenuOpen((current) => !current)}
-        >
-          {menuOpen ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}
-        </button>
+        <div className={styles.navigationRow}>
+          <nav className={styles.desktopNav} aria-label="主导航">
+            {navigation.map((item) => (
+              <NavLink
+                key={item.to}
+                className={({ isActive }) =>
+                  `${styles.navLink} ${isActive ? styles.navLinkActive : ''}`
+                }
+                end={item.end}
+                to={item.to}
+              >
+                {item.label}
+              </NavLink>
+            ))}
+          </nav>
+          <div className={styles.account}>{accountLinks}</div>
+        </div>
       </div>
 
       {menuOpen ? (

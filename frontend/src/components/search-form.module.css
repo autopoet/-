@@ -1,43 +1,54 @@
+/* Hallmark · macrostructure: index search · tone: technical editorial austere · anchor hue: Signal Green · genre: editorial */
+/* Hallmark · pre-emit critique: P5 H5 E5 S5 R5 V5 · contrast: pass (40–41) · slop: pass (58/58) */
 .form {
   position: relative;
   width: 100%;
 }
 
 .control {
-  min-height: 3.25rem;
+  min-height: 3.5rem;
   display: flex;
   align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-1);
-  padding-left: var(--space-4);
+  gap: var(--space-2xs);
+  padding: var(--space-3xs);
+  padding-inline-start: var(--space-sm);
   background: var(--color-surface);
-  border: 1px solid var(--color-control-border);
-  border-radius: var(--radius-control);
-  transition:
-    border-color var(--duration-fast) var(--ease-out),
-    box-shadow var(--duration-fast) var(--ease-out);
+  border: var(--rule-hair) solid var(--color-rule-2);
+  border-radius: var(--radius-input);
+  outline: var(--rule-fine) solid transparent;
+  outline-offset: var(--rule-hair);
+  transition: background-color var(--dur-short) var(--ease-out);
 }
 
 .form:focus-within .control {
-  border-color: var(--color-accent);
-  box-shadow: 0 0 0 0.1875rem var(--color-accent-soft);
+  background: var(--color-paper);
+  outline-color: var(--color-focus);
+}
+
+.form:has(.input[aria-invalid="true"]) .control {
+  outline-color: var(--color-danger);
 }
 
 .hero .control {
-  min-height: 3.75rem;
-  padding-left: var(--space-5);
+  min-height: 4rem;
+  padding-inline-start: var(--space-md);
 }
 
 .searchIcon {
   flex: 0 0 auto;
   color: var(--color-muted);
+  transition: color var(--dur-short) var(--ease-out);
+}
+
+.form:focus-within .searchIcon {
+  color: var(--color-accent);
 }
 
 .input {
   width: 100%;
   min-width: 0;
   color: var(--color-ink);
-  font-size: var(--text-body);
+  font-size: var(--text-md);
   line-height: 1.5;
   background: transparent;
   border: 0;
@@ -61,8 +72,9 @@
   align-items: center;
   justify-content: center;
   border: 0;
-  border-radius: var(--radius-control);
+  border-radius: var(--radius-input);
   cursor: pointer;
+  white-space: nowrap;
 }
 
 .clearButton {
@@ -70,28 +82,21 @@
   padding: 0;
   color: var(--color-muted);
   background: transparent;
-}
-
-.clearButton:hover {
-  color: var(--color-ink);
-  background: var(--color-surface-subtle);
+  transition:
+    color var(--dur-short) var(--ease-out),
+    background-color var(--dur-short) var(--ease-out);
 }
 
 .submitButton {
   flex: 0 0 auto;
-  gap: var(--space-2);
-  padding-inline: var(--space-4);
-  color: var(--color-surface);
+  padding-inline: var(--space-md);
+  color: var(--color-accent-ink);
   font-size: var(--text-meta);
   font-weight: var(--weight-semibold);
   background: var(--color-accent);
   transition:
-    background-color var(--duration-fast) var(--ease-out),
-    transform var(--duration-fast) var(--ease-out);
-}
-
-.submitButton:hover {
-  background: var(--color-accent-hover);
+    background-color var(--dur-short) var(--ease-out),
+    transform var(--dur-micro) var(--ease-out);
 }
 
 .submitButton:active {
@@ -102,56 +107,67 @@
 .loader {
   flex: 0 0 auto;
   color: var(--color-accent);
-  animation: spin 800ms linear infinite;
+  animation: spin 900ms linear infinite;
 }
 
 .validation {
-  margin: var(--space-2) 0 0;
-  color: var(--color-danger);
-  font-size: var(--text-meta);
+  min-height: 1lh;
+  margin: var(--space-2xs) 0 0;
+  color: var(--color-muted);
+  font-family: var(--font-outlier);
+  font-size: var(--text-xs);
   line-height: 1.5;
+}
+
+.validation[data-error="true"] {
+  color: var(--color-danger);
 }
 
 .suggestions {
   position: absolute;
-  top: calc(100% + var(--space-2));
-  right: 0;
-  left: 0;
+  inset-block-start: calc(100% + var(--space-2xs));
+  inset-inline: 0;
   z-index: var(--z-dropdown);
-  max-height: min(28rem, 60vh);
-  padding: var(--space-2);
+  max-height: min(28rem, 60dvh);
+  padding: var(--space-2xs);
   overflow-y: auto;
   background: var(--color-surface);
-  border-radius: var(--radius-panel);
+  border: var(--rule-hair) solid var(--color-rule-2);
+  border-radius: var(--radius-card);
   box-shadow: var(--shadow-float);
-  animation: suggestions-in var(--duration-fast) var(--ease-out);
+  transform-origin: top center;
+  animation: suggestions-in var(--dur-short) var(--ease-out) both;
 }
 
 .suggestion {
   width: 100%;
-  min-height: 3.75rem;
+  min-height: 4rem;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   justify-content: center;
-  gap: var(--space-1);
-  padding: var(--space-3);
-  text-align: left;
+  gap: var(--space-3xs);
+  padding: var(--space-xs);
+  color: var(--color-ink);
+  text-align: start;
   background: transparent;
   border: 0;
-  border-radius: var(--radius-control);
+  border-radius: var(--radius-input);
   cursor: pointer;
+  transition:
+    color var(--dur-micro) var(--ease-out),
+    background-color var(--dur-micro) var(--ease-out);
 }
 
-.suggestion:hover,
 .suggestionActive {
+  color: var(--color-accent);
   background: var(--color-accent-soft);
 }
 
 .suggestionTitle {
   max-width: 100%;
   color: var(--color-ink);
-  font-size: var(--text-body);
+  font-size: var(--text-md);
   font-weight: var(--weight-semibold);
   overflow-wrap: anywhere;
 }
@@ -168,7 +184,7 @@
 
 .suggestionMessage {
   margin: 0;
-  padding: var(--space-5) var(--space-3);
+  padding: var(--space-md) var(--space-xs);
   color: var(--color-muted);
   font-size: var(--text-meta);
   line-height: 1.6;
@@ -178,19 +194,43 @@
 .viewAll {
   width: 100%;
   min-height: 2.75rem;
-  padding: var(--space-2) var(--space-3);
+  padding: var(--space-2xs) var(--space-xs);
   color: var(--color-accent);
   font-size: var(--text-meta);
   font-weight: var(--weight-semibold);
   background: transparent;
   border: 0;
-  border-top: 1px solid var(--color-border);
+  border-top: var(--rule-hair) solid var(--color-rule);
   cursor: pointer;
+  white-space: nowrap;
+  transition:
+    color var(--dur-short) var(--ease-out),
+    background-color var(--dur-short) var(--ease-out);
 }
 
-.viewAll:hover {
-  color: var(--color-accent-hover);
-  background: var(--color-surface-subtle);
+@media (hover: hover) and (pointer: fine) {
+  .control:hover {
+    background: var(--color-paper);
+  }
+
+  .clearButton:hover {
+    color: var(--color-ink);
+    background: var(--color-paper-2);
+  }
+
+  .submitButton:hover {
+    background: var(--color-accent-hover);
+  }
+
+  .suggestion:hover {
+    color: var(--color-accent);
+    background: var(--color-accent-soft);
+  }
+
+  .viewAll:hover {
+    color: var(--color-accent-hover);
+    background: var(--color-paper-2);
+  }
 }
 
 @keyframes spin {
@@ -202,22 +242,17 @@
 @keyframes suggestions-in {
   from {
     opacity: 0;
-    transform: translateY(-0.25rem);
+    transform: translateY(-0.375rem) scaleY(0.98);
   }
 }
 
-@media (max-width: 36rem) {
+@media (max-width: 24rem) {
   .hero .control {
-    min-height: 3.25rem;
-    padding-left: var(--space-3);
+    min-height: 3.5rem;
+    padding-inline-start: var(--space-xs);
   }
 
   .submitButton {
-    width: 2.75rem;
-    padding: 0;
-  }
-
-  .submitButton span {
-    display: none;
+    padding-inline: var(--space-sm);
   }
 }

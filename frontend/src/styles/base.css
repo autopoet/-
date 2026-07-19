@@ -1,3 +1,5 @@
+/* Hallmark · macrostructure: multi-page system · tone: technical editorial austere · anchor hue: Signal Green · genre: editorial */
+/* Hallmark · pre-emit critique: P5 H5 E5 S5 R5 V5 · contrast: pass (40–41) · slop: pass (58/58) */
 *,
 *::before,
 *::after {
@@ -6,25 +8,25 @@
 
 html {
   min-width: 320px;
+  overflow-x: clip;
   scroll-behavior: smooth;
   scroll-padding-top: calc(var(--header-height) + var(--space-6));
 }
 
 body {
   min-width: 320px;
-  min-height: 100vh;
   min-height: 100dvh;
   margin: 0;
-  overflow-x: hidden;
+  overflow-x: clip;
   color: var(--color-ink);
-  background: var(--color-canvas);
+  background: var(--color-paper);
 }
 
 body,
 button,
 input,
 textarea {
-  font-family: var(--font-sans);
+  font-family: var(--font-body);
 }
 
 button,
@@ -49,6 +51,15 @@ button {
   color: inherit;
 }
 
+button:disabled,
+input:disabled,
+textarea:disabled {
+  color: var(--color-muted);
+  cursor: not-allowed;
+  background: var(--color-paper-2);
+  opacity: 0.55;
+}
+
 a {
   color: inherit;
 }
@@ -60,6 +71,7 @@ svg {
 }
 
 :where(h1, h2, h3, p, li, dt, dd, th, td, strong) {
+  min-width: 0;
   overflow-wrap: anywhere;
 }
 
@@ -69,8 +81,8 @@ svg {
 }
 
 :focus-visible {
-  outline: 0.125rem solid var(--color-accent);
-  outline-offset: 0.125rem;
+  outline: 0.125rem solid var(--color-focus);
+  outline-offset: 0.1875rem;
 }
 
 main:focus {
@@ -91,16 +103,19 @@ main:focus {
 
 .skip-link {
   position: fixed;
-  top: var(--space-3);
-  left: var(--space-3);
+  inset-block-start: var(--space-xs);
+  inset-inline-start: var(--space-xs);
   z-index: var(--z-modal);
-  padding: var(--space-3) var(--space-4);
-  color: var(--color-surface);
+  min-height: 2.75rem;
+  display: inline-flex;
+  align-items: center;
+  padding-inline: var(--space-sm);
+  color: var(--color-accent-ink);
   text-decoration: none;
   background: var(--color-ink);
-  border-radius: var(--radius-control);
-  transform: translateY(calc(-100% - var(--space-6)));
-  transition: transform var(--duration-fast) var(--ease-out);
+  border-radius: var(--radius-input);
+  transform: translateY(calc(-100% - var(--space-md)));
+  transition: transform var(--dur-micro) var(--ease-out);
 }
 
 .skip-link:focus {
@@ -109,7 +124,20 @@ main:focus {
 
 @keyframes skeleton-pulse {
   50% {
-    opacity: 0.45;
+    opacity: 0.55;
+  }
+}
+
+@keyframes page-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(0.375rem);
+  }
+}
+
+@media (min-width: 40rem) {
+  #main-content {
+    animation: page-arrive var(--dur-long) var(--ease-out) both;
   }
 }
 

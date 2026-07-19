@@ -31,8 +31,8 @@ export default function LoginPage() {
         <h1>{mode === 'login' ? '登录' : '注册'}</h1>
         <p>
           {mode === 'login'
-            ? '登录后可以编辑文档并提交审核。'
-            : '第一位注册用户会成为审核员，后续用户是普通贡献者。'}
+            ? '登录后可直接在文档中修改，并提交审核。'
+            : '账户用于记录每次修改；公开版本仍需审核通过。'}
         </p>
       </header>
 
@@ -85,7 +85,11 @@ export default function LoginPage() {
           </p>
         ) : null}
         <button className={styles.primaryButton} type="submit" disabled={authMutation.isPending}>
-          {authMutation.isPending ? '请稍候…' : mode === 'login' ? '登录' : '创建账号'}
+          {authMutation.isPending
+            ? '正在处理…'
+            : mode === 'login'
+              ? '登录'
+              : '创建账号'}
         </button>
       </form>
     </main>

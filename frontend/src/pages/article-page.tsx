@@ -118,8 +118,8 @@ function WaveformFigure({ kind }: { kind: 'power-drop' | 'serial' }) {
       >
         <title id={`waveform-${kind}-title`}>{title}</title>
         <desc id={`waveform-${kind}-description`}>{description}</desc>
-        <rect width="640" height="220" fill="#16211b" rx="6" />
-        <g stroke="#5f6d65" strokeOpacity="0.35" strokeWidth="1">
+        <rect className={styles.waveBackground} width="640" height="220" rx="4" />
+        <g className={styles.waveGrid} strokeWidth="1">
           {[80, 160, 240, 320, 400, 480, 560].map((x) => (
             <line key={`x-${x}`} x1={x} y1="20" x2={x} y2="190" />
           ))}
@@ -132,14 +132,14 @@ function WaveformFigure({ kind }: { kind: 'power-drop' | 'serial' }) {
             <path
               d="M30 78 L220 78 C232 78 236 82 242 122 C250 170 278 112 302 98 C330 82 350 80 385 80 L610 80"
               fill="none"
-              stroke="#7de2a8"
+              className={styles.waveSignal}
               strokeWidth="4"
               strokeLinecap="round"
             />
             <path
               d="M30 155 L236 155 L242 120 L610 120"
               fill="none"
-              stroke="#e2c568"
+              className={styles.waveSecondary}
               strokeWidth="3"
               strokeLinecap="round"
             />
@@ -148,15 +148,15 @@ function WaveformFigure({ kind }: { kind: 'power-drop' | 'serial' }) {
           <path
             d="M30 155 L80 155 L80 55 L145 55 L145 155 L210 155 L210 55 L275 55 L275 155 L340 155 L340 55 L470 55 L470 155 L535 155 L535 55 L610 55"
             fill="none"
-            stroke="#7de2a8"
+            className={styles.waveSignal}
             strokeWidth="4"
             strokeLinejoin="round"
           />
         )}
-        <text x="34" y="208" fill="#a7b5ac" fontSize="14">
+        <text className={styles.waveLabel} x="34" y="208" fontSize="14">
           时间
         </text>
-        <text x="570" y="208" fill="#a7b5ac" fontSize="14">
+        <text className={styles.waveLabel} x="570" y="208" fontSize="14">
           2 ms/div
         </text>
       </svg>

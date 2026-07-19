@@ -118,7 +118,7 @@ export default function ReviewsPage() {
     <main id="main-content" className={styles.listPage}>
       <header className={styles.pageTitle}>
         <h1>审核队列</h1>
-        <p>通过后立即成为公开版本；驳回必须说明需要修改的内容。</p>
+        <p>逐行核对修改，再决定是否发布。</p>
       </header>
       {reviews.isLoading ? <ListSkeleton rows={4} /> : null}
       {reviews.isError ? <ErrorState description="审核队列加载失败。" /> : null}
