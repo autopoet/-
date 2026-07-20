@@ -7,6 +7,7 @@ import {
   X,
 } from 'lucide-react'
 import {
+  type CSSProperties,
   type MouseEvent,
   useEffect,
   useMemo,
@@ -237,8 +238,39 @@ export default function ArticlePage() {
   const validArticleId =
     Number.isInteger(numericArticleId) && numericArticleId > 0
   const commentsDialogRef = useRef<HTMLDialogElement>(null)
+  const documentRef = useRef<HTMLElement>(null)
   const lastCommentTriggerRef = useRef<HTMLButtonElement | null>(null)
+  const [readingProgress, setReadingProgress] = useState(0)
+  const [selectedQuote, setSelectedQuote] = useState('')
+  const [selectionAction, setSelectionAction] = useState<{
+    left: number
+    top: number
+  } | null>(null)
   const currentUser = useCurrentUser()
+
+  useEffect(() => {
+    let frame = 0
+    const updateProgress = () => {
+      cancelAnimationFrame(frame)
+      frame = requestAnimationFrame(() => {
+        const documentElement = documentRef.current
+        if (!documentElement) return
+        const rect = documentElement.getBoundingClientRect()
+        const scrollable = Math.max(documentElement.offsetHeight - window.innerHeight, 1)
+        const current = Math.min(Math.max(-rect.top + 96, 0), scrollable)
+        setReadingProgress(Math.round((current / scrollable) * 100))
+      })
+    }
+
+    updateProgress()
+    window.addEventListener('scroll', updateProgress, { passive: true })
+    window.addEventListener('resize', updateProgress)
+    return () => {
+      cancelAnimationFrame(frame)
+      window.removeEventListener('scroll', updateProgress)
+      window.removeEventListener('resize', updateProgress)
+    }
+  }, [articleId, editRequested])
 
   const symptomQuery = useQuery({
     queryKey: symptomKeys.detail(numericArticleId),
@@ -284,6 +316,35 @@ export default function ArticlePage() {
   function openComments(event: MouseEvent<HTMLButtonElement>) {
     lastCommentTriggerRef.current = event.currentTarget
     commentsDialogRef.current?.showModal()
+  }
+
+  function captureSelection() {
+    window.setTimeout(() => {
+      const selection = window.getSelection()
+      if (!selection || selection.isCollapsed || selection.rangeCount === 0) {
+        setSelectionAction(null)
+        return
+      }
+
+      const range = selection.getRangeAt(0)
+      if (!documentRef.current?.contains(range.commonAncestorContainer)) {
+        setSelectionAction(null)
+        return
+      }
+
+      const quote = selection.toString().trim().slice(0, 240)
+      if (!quote) {
+        setSelectionAction(null)
+        return
+      }
+
+      const rect = range.getBoundingClientRect()
+      setSelectedQuote(quote)
+      setSelectionAction({
+        left: Math.min(Math.max(rect.left + rect.width / 2, 72), window.innerWidth - 72),
+        top: Math.max(rect.top - 56, 12),
+      })
+    }, 0)
   }
 
   function closeComments() {
@@ -475,7 +536,12 @@ export default function ArticlePage() {
           </nav>
         </aside>
 
-        <article className={styles.document}>
+        <article
+          ref={documentRef}
+          className={styles.document}
+          onMouseUp={captureSelection}
+          onKeyUp={captureSelection}
+        >
           {submitted ? (
             <p className={styles.submittedNotice} role="status">
               修改已提交审核；公开内容会在审核通过后更新。
@@ -612,7 +678,19 @@ export default function ArticlePage() {
 
         </article>
 
-        <aside className={styles.commentRail} aria-label="评论入口">
+        <aside
+          className={styles.progressRail}
+          aria-label={`阅读进度 ${readingProgress}%`}
+          style={
+            {
+              '--reading-progress': `${readingProgress}%`,
+            } as CSSProperties
+          }
+        >
+          <span className={styles.progressLabel}>{readingProgress}%</span>
+          <span className={styles.progressTrack} aria-hidden="true">
+            <span />
+          </span>
           <button
             type="button"
             aria-controls="comments-dialog"
@@ -625,6 +703,22 @@ export default function ArticlePage() {
           </button>
         </aside>
       </main>
+
+      {selectionAction ? (
+        <button
+          className={styles.selectionComment}
+          style={{ left: selectionAction.left, top: selectionAction.top }}
+          type="button"
+          onMouseDown={(event) => event.preventDefault()}
+          onClick={(event) => {
+            openComments(event)
+            setSelectionAction(null)
+          }}
+        >
+          <MessageSquareText aria-hidden="true" size={17} />
+          评论选中内容
+        </button>
+      ) : null}
 
       <dialog
         id="comments-dialog"
@@ -652,11 +746,29 @@ export default function ArticlePage() {
               <X aria-hidden="true" size={20} />
             </button>
           </header>
-          <div className={styles.commentsEmpty}>
-            <MessageSquareText aria-hidden="true" size={28} />
-            <h3>这里还没有讨论</h3>
-            <p>登录后可选中正文中的一段文字发起评论。</p>
-          </div>
+          {selectedQuote ? (
+            <div className={styles.commentComposer}>
+              <span>选中的原文</span>
+              <blockquote>{selectedQuote}</blockquote>
+              <label>
+                评论
+                <textarea
+                  rows={5}
+                  placeholder="写下需要讨论或补充验证的内容…"
+                />
+              </label>
+              <p>评论保存与讨论线程将在下一阶段接入。</p>
+              <button type="button" disabled>
+                暂未接入保存
+              </button>
+            </div>
+          ) : (
+            <div className={styles.commentsEmpty}>
+              <MessageSquareText aria-hidden="true" size={28} />
+              <h3>选中正文后开始讨论</h3>
+              <p>评论保存功能将在下一阶段接入。</p>
+            </div>
+          )}
         </div>
       </dialog>
     </>

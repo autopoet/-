@@ -13,6 +13,8 @@ from app.models.user import User
 from app.schemas.article import (
     ArticleDraftPayload,
     ArticleRevisionItem,
+    ContributionItem,
+    ContributionOverview,
     RevisionListResponse,
 )
 
@@ -73,6 +75,40 @@ def list_my_revisions(
     )
     items = [serialize_revision(revision) for revision in revisions]
     return RevisionListResponse(items=items, total=len(items))
+
+
+@router.get("/mine/overview", response_model=ContributionOverview)
+def get_contribution_overview(
+    current_user: Annotated[User, Depends(get_current_user)],
+) -> ContributionOverview:
+    revisions = list(
+        ArticleRevision.select()
+        .where(ArticleRevision.author == current_user)
+        .order_by(ArticleRevision.updated_at.desc())
+    )
+    return ContributionOverview(
+        total=len(revisions),
+        published=sum(
+            revision.status in {"approved", "superseded"}
+            for revision in revisions
+        ),
+        pending=sum(revision.status == "pending" for revision in revisions),
+        drafts=sum(
+            revision.status in {"draft", "rejected"} for revision in revisions
+        ),
+        recent=[
+            ContributionItem(
+                id=revision.id,
+                symptom_id=revision.symptom_id,
+                version_number=revision.version_number,
+                status=revision.status,
+                title=revision.title,
+                edit_summary=revision.edit_summary,
+                updated_at=revision.updated_at,
+            )
+            for revision in revisions[:6]
+        ],
+    )
 
 
 @router.get("/{symptom_id}", response_model=ArticleRevisionItem)

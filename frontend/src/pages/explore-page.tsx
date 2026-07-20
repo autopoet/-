@@ -37,11 +37,13 @@ export default function ExplorePage() {
     <main id="main-content" className={styles.page}>
       <header className={styles.pageHeader}>
         <div>
-          <h1>
-            {keyword ? `“${keyword.slice(0, 20)}”的搜索结果` : '故障现象索引'}
-          </h1>
+          <h1>查 BUG</h1>
           {keywordIsValid && symptomsQuery.data ? (
-            <span aria-live="polite">{symptomsQuery.data.total} 条记录</span>
+            <span aria-live="polite">
+              {keyword
+                ? `“${keyword.slice(0, 20)}”找到 ${symptomsQuery.data.total} 篇文档`
+                : `找到 ${symptomsQuery.data.total} 篇文档`}
+            </span>
           ) : null}
         </div>
         <SearchForm initialValue={keyword} variant="page" showSuggestions={false} />
@@ -49,7 +51,7 @@ export default function ExplorePage() {
 
       <section className={styles.results} aria-labelledby="results-title">
         <div className={styles.resultsHeader}>
-          <h2 id="results-title">{keyword ? '匹配条目' : '全部条目'}</h2>
+          <h2 id="results-title">{keyword ? '匹配文档' : '全部文档'}</h2>
         </div>
 
         {!keywordIsValid ? (
@@ -86,6 +88,7 @@ export default function ExplorePage() {
                     <p>
                       <HighlightedText text={symptom.description} keyword={keyword} />
                     </p>
+                    <span className={styles.resultMeta}>故障现象 #{symptom.id}</span>
                   </div>
                   <ArrowRight aria-hidden="true" size={20} />
                 </Link>
@@ -94,6 +97,7 @@ export default function ExplorePage() {
           </ul>
         ) : null}
       </section>
+
     </main>
   )
 }

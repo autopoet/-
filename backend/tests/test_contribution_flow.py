@@ -44,6 +44,39 @@ def test_login_rejects_wrong_password() -> None:
     assert response.status_code == 401
 
 
+def test_contribution_overview_requires_login() -> None:
+    with TestClient(app) as client:
+        response = client.get("/api/v1/articles/mine/overview")
+
+    assert response.status_code == 401
+
+
+def test_contribution_overview_returns_real_revision_counts() -> None:
+    with TestClient(app) as client:
+        register(client, "owner")
+        saved = client.put("/api/v1/articles/1/draft", json=DRAFT)
+        overview = client.get("/api/v1/articles/mine/overview")
+
+    assert overview.status_code == 200
+    assert overview.json() == {
+        "total": 1,
+        "published": 0,
+        "pending": 0,
+        "drafts": 1,
+        "recent": [
+            {
+                "id": saved.json()["id"],
+                "symptom_id": 1,
+                "version_number": 1,
+                "status": "draft",
+                "title": "无法上电",
+                "edit_summary": "补充无法上电的基础排查步骤",
+                "updated_at": saved.json()["updated_at"],
+            }
+        ],
+    }
+
+
 def test_register_edit_submit_review_publish_flow() -> None:
     with TestClient(app) as client:
         reviewer = register(client, "owner")

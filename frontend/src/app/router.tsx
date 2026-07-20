@@ -6,6 +6,7 @@ import ExplorePage from '../pages/explore-page'
 import HomePage from '../pages/home-page'
 import LoginPage from '../pages/login-page'
 import NotFoundPage from '../pages/not-found-page'
+import ProfilePage from '../pages/profile-page'
 import ReviewsPage from '../pages/reviews-page'
 import RouteErrorPage from '../pages/route-error-page'
 import SubmissionsPage from '../pages/submissions-page'
@@ -18,6 +19,7 @@ export const router = createBrowserRouter([
       { index: true, element: <HomePage /> },
       { path: 'explore', element: <ExplorePage /> },
       { path: 'login', element: <LoginPage /> },
+      { path: 'profile', element: <ProfilePage /> },
       { path: 'articles/:articleId', element: <ArticlePage /> },
       { path: 'articles/:articleId/edit', element: <LegacyEditorRedirect /> },
       { path: 'submissions', element: <SubmissionsPage /> },

@@ -1,188 +1,126 @@
-# 电赛白皮书设计系统
+# 电赛白皮书界面设计系统
 
-## 核心方向
+## 方向
 
-界面是一份可协作、可追溯的技术出版物，不是营销官网。整体语气为“技术、编辑、克制”：先呈现故障现象，再提供有顺序的测量与验证步骤；编辑、审核、版本和评论是同一份文档上的工作状态。
+界面采用 **A · Liquid Archive 为主，D · Spatial Canvas 为辅**。
 
-视觉母题为 **Technical Editorial / Signal Green**。带绿色倾向的纸张底色、中文宋体标题、无衬线正文和等宽数据共同建立知识感。Signal Green 只标记可操作位置、当前状态与已验证内容，占屏面积不超过约 5%。
+它首先是一个安静、可靠、方便检索的技术知识库，其次才是一块具有空间感和生命力的数字画布。视觉参考 iOS 的材质、景深与响应感，但不照搬系统组件；知识内容必须永远比装饰更清晰。
 
-## 页面家族
+详细页面生成与评审依据见 `UI_UPGRADE_PROMPT.md`。
 
-| 页面 | Hallmark 宏结构 | 任务 |
-| --- | --- | --- |
-| 首页 | Ecosystem Index | 快速搜索，并从常见故障、供电、通信等入口开始排查 |
-| 知识库 | Index-First | 浏览、筛选与阅读全部故障条目 |
-| 文章 / 未收录条目 | Long Document | 连续阅读、目录定位、版本查看与评论 |
-| 登录 / 我的提交 / 审核 | Workbench | 完成贡献与审核工作 |
-| 行内编辑 | Long Document + Workbench | 在文档原位置修改，不跳转独立编辑器 |
+## 设计原则
 
-首页与知识库不得复用同一信息结构：首页强调“立即开始”和少量分组入口；知识库强调完整索引、查询结果和数量。
+1. **内容是实体**：故障现象、测量步骤、版本与 Diff 都是可定位、可追踪的对象。
+2. **界面像环境**：导航和搜索以浮动节点存在，不建立传统后台式顶栏、侧栏和卡片墙。
+3. **一页一个主动作**：首页只搜索，查 BUG 页只检索与浏览，文档页只阅读与原位编辑。
+4. **不伪造能力**：未接入的评论保存、筛选和统计不能表现成可用功能。
+5. **简洁来自删减**：没有帮助用户完成当前任务的副标题、标签、容器和按钮应删除。
 
-## 导航与页脚
+## 视觉语言
 
-- 顶部采用简化的 Newspaper Masthead：窄信息行、居中的宋体站名、同一行主导航和账户操作、双线收口。
-- 宽屏保持完整导航；小屏收为站名、菜单按钮和展开式导航。所有可点击标签保持单行。
-- 页脚采用 Inline Rule：一条细线和一行产品性质、开放协作说明，不使用四列链接型 SaaS 页脚。
+### 色彩
 
-## 色彩
-
-所有颜色在 `frontend/tokens.css` 中以 OKLCH 定义，组件不得写入临时十六进制色。
+全部颜色定义在 `frontend/tokens.css`，组件不写临时十六进制色。
 
 | 角色 | Token | 用途 |
 | --- | --- | --- |
-| Paper | `--color-paper` | 全站纸张底色 |
-| Paper 2 / 3 | `--color-paper-2/3` | 索引带、代码背景、弱分区 |
-| Surface | `--color-surface` | 输入框与浮层 |
-| Ink / Ink 2 | `--color-ink/ink-2` | 标题、正文与深色控件 |
-| Neutral / Muted | `--color-neutral/muted` | 正文次级层级与元信息 |
-| Rule / Rule 2 | `--color-rule/rule-2` | 分隔线与控件边界 |
-| Signal Green | `--color-accent` | 主操作、当前项、通过状态 |
-| Warning / Danger | `--color-warning/danger` | 风险和错误语义 |
+| 空间底色 | `--color-canvas` | 全站背景 |
+| 纸张 | `--color-paper(-solid)` | 阅读内容与不透明承载面 |
+| 玻璃 | `--color-glass(-strong)` | 搜索、导航、浮层 |
+| 墨色 | `--color-ink / --color-text` | 标题与正文 |
+| 深青 | `--color-accent` | 主操作与当前状态 |
+| 验证绿 | `--color-verified` | 审核通过 |
+| 光谱色 | `--color-spectrum-*` | 极低占比的环境光和空间轨迹 |
 
-任何设置深色或强调色背景的规则，必须同时显式设置对应文字颜色。删除、增加、警告和错误状态不能只靠颜色，还要配合符号、文本或结构。
+青色是交互色，绿色只表达“已验证/已通过”。光谱色不能承载正文，也不能降低阅读对比度。
 
-## 字体
+### 字体
 
-- 展示与文章标题：`--font-display`，首选 `Noto Serif SC`。
-- 界面与正文：`--font-body`，首选 `Noto Sans SC`。
-- 版本、行号、测量值与代码：`--font-outlier`，首选 `JetBrains Mono`。
-- 采用 major-third 字号阶梯：`0.75 / 0.875 / 1 / 1.25 / 1.563 / 1.953rem`，站名可使用流体 `--text-display`。
-- 正文最小 `1rem`，文章行高 `1.75`，建议行宽 `60–72ch`。标题使用正常体，不用斜体强调词。
-- 单页最多出现五个主要字号；小标签只在真正的版本、序号或状态信息中使用。
+- 标题与界面：`--font-display`，现代无衬线，紧凑字距。
+- 正文：`--font-body`，中文优先系统无衬线，行高约 `1.7–1.75`。
+- 版本号、百分比和测量值：`--font-outlier`，等宽字体。
+- 展示字号只用于页面唯一主标题；普通段落不使用大号宣传文案。
 
-## 间距、形状与层级
+### 材质与形状
 
-- 4pt 语义尺度：`4 / 8 / 12 / 16 / 24 / 32 / 48 / 72 / 112 / 176px`。
-- 页面通过留白、纸色带和细线组织。只允许一个语义容器层级，禁止卡片套卡片。
-- 输入与普通面板圆角为 `4px`；状态胶囊可用全圆角。常规内容不使用柔光阴影。
-- 阴影仅用于搜索建议和抽屉等真正浮在内容之上的元素。
-- 触控目标至少 `44×44px`；输入框与相邻按钮保持相同高度。
+- 页面背景是浅冷灰纸面，带极淡的青、蓝、紫环境光。
+- 玻璃只用于真正浮在内容上的导航、搜索、评论和操作控件。
+- 大胶囊用于搜索透镜；圆形用于单一图标动作；正文容器不做卡片套卡片。
+- 阴影必须表达空间高度，不能给所有区块增加柔光。
 
-## 内容与组件
+## 空间框架
 
-- 搜索框是单一输入表面：左侧搜索图标、正文输入、右侧清除与提交操作。禁止在同一视图重复放置两个视觉相同的搜索框。
-- 首页条目以编号索引和故障分组呈现；知识库使用完整的规则线列表和结果计数。
-- 文章目录、正文和评论入口在宽屏形成稳定三列；评论默认收起，打开后正文不重排。
-- 文章提示块使用顶部规则、图标和文字，不使用厚重侧边色条。
-- 编辑器保持阅读页排版，只把可修改内容变成输入表面；操作栏固定在内容底部，保存成功保持安静反馈。
-- 审核页先显示版本责任信息，再显示逐字段、逐行 Diff；增删背景保持低饱和，行号采用等宽数字。
-- 空状态明确“什么为空”和下一步；错误信息说明发生了什么以及如何继续。
+- 左上固定品牌锚点，仅包含图标和“电赛白皮书”。
+- 桌面端左下使用径向导航：当前页面是中心节点，Hover、聚焦或点击后展开其他入口。
+- 移动端使用底部玻璃 Dock，保证单手可达。
+- 全局搜索是右上浮动搜索球；首页和查 BUG 页已有主搜索时隐藏，避免重复。
+- 登录/注册页只保留品牌，不显示主导航与搜索。
+
+## 页面结构
+
+### 首页
+
+- 满屏故障搜索透镜是唯一主角。
+- 四个常见故障沿轨道分布，用于快速进入搜索结果。
+- 只显示真实条目总数，不放功能介绍、宣传副标题和重复入口。
+
+### 查 BUG
+
+- 使用超大“查 BUG”标题、单个搜索框和线性文档索引。
+- 每行只有序号、标题、现象摘要和进入箭头。
+- 不放未实现的分类筛选，也不使用卡片网格。
+
+### 登录 / 注册
+
+- 两种模式在同一玻璃面板内平滑切换，不跳转第二套页面。
+- 左侧空间仅保留信号轨迹和环境光，不增加营销文案。
+- 表单只有用户名、密码、错误反馈和一个主动作。
+
+### 个人页
+
+- 展示真实用户身份、四个真实贡献计数与最近贡献轨迹。
+- 点击轨迹中的版本，在同页检查其状态和摘要。
+- 审核入口仅对审核员显示；不伪造点赞、收藏或评论统计。
+
+### 文档页
+
+- 桌面端为目录、正文、阅读进度三列；窄屏收为单列。
+- 目录是一条节点轨迹，不是传统侧边栏。
+- 右侧显示阅读进度，并保留默认收起的评论入口。
+- 选中文字后，在选区附近出现“评论选中内容”动作。
+- 编辑发生在当前文档中，正文切换为原位编辑状态，不跳独立编辑器。
+
+### 审核与版本
+
+- 审核人首先看到修改者、时间、版本和摘要，然后看到字段级 Diff。
+- 删除与新增同时依靠符号、文字和颜色表达。
+- 发布版本记录修改者、审核者和日期；待审核版本不能覆盖公开正文。
 
 ## 动效
 
-动效可以被感知，但必须解释状态变化。每页最多三种动效原语：
+动效可以明显，但必须服务空间关系或状态变化。
 
-1. 页面首次进入：宽屏下整体 `opacity + translateY(6px)`，`420ms`，只执行一次。
-2. 状态响应：导航下划线、按钮按压、索引箭头和输入背景使用 `120–220ms`。
-3. 浮层与模式：搜索建议、评论抽屉、行内编辑和 Diff 展开使用 `220–420ms` 的 `opacity / transform`。
+- 页面进入：透明度与 `6–10px` 位移，约 `360ms`。
+- 径向导航：卫星节点从中心展开，使用弹性缓动但不连续弹跳。
+- 搜索：搜索球展开为透镜，输入聚焦后才显示完整操作。
+- 首页：轨道与少量粒子缓慢运动，速度足够低，不干扰输入。
+- 文档：滚动只更新阅读进度；不做逐段滚入动画。
+- 编辑、评论和登录模式切换使用共享容器，不闪屏。
 
-不做弹跳、漂浮、视差、循环装饰、全页面滚动入场或 `transition: all`。焦点环立即出现，不参与过渡。`prefers-reduced-motion` 下空间位移折叠为不超过 `150ms` 的透明度反馈。
+`prefers-reduced-motion: reduce` 下取消轨道、粒子和大位移，只保留不超过 `150ms` 的透明度反馈。
 
 ## 响应式与可访问性
 
-- 移动优先，在 `40rem / 60rem / 90rem` 按内容需要增强布局。
-- 必须人工检查 `320 / 375 / 414 / 768px`；`html` 与 `body` 均使用 `overflow-x: clip`。
-- 导航、按钮、页脚链接、面包屑等可点击文字不得折成两行。
-- 无鼠标时仍可完成全部操作；Hover 规则只写在 `@media (hover: hover) and (pointer: fine)` 中。
-- 目标为 WCAG AA。正文对比度至少 `4.5:1`，大字、图标和焦点至少 `3:1`。
-- 使用正确地标、标题层级、键盘顺序、`aria-live` 和表单错误关联；波形与图片必须有替代说明。
+- 在 `40rem / 48rem / 68rem` 按内容需要切换布局。
+- 必须检查 `320 / 375 / 414 / 768 / 1280 / 1440px`。
+- 触控目标至少 `44×44px`，键盘可到达所有功能。
+- 焦点环不可被动画延迟；正文与背景满足 WCAG AA。
+- 装饰轨道和环境光使用 `aria-hidden`，所有图标按钮提供可读名称。
+- 禁止用横向裁切掩盖布局错误。
 
-## Exports
+## 工程约束
 
-### 1. CSS（源文件）
-
-完整源文件为 `frontend/tokens.css`。页面只能引用该文件中的命名 token。
-
-### 2. Tailwind v4 `@theme`
-
-```css
-@theme {
-  --color-paper: oklch(97.5% 0.009 150);
-  --color-paper-2: oklch(94.5% 0.014 150);
-  --color-paper-3: oklch(91% 0.018 150);
-  --color-ink: oklch(22% 0.025 155);
-  --color-neutral: oklch(38% 0.022 155);
-  --color-muted: oklch(47% 0.019 155);
-  --color-rule: oklch(86% 0.018 150);
-  --color-accent: oklch(46% 0.115 151);
-  --color-accent-ink: oklch(98% 0.008 150);
-  --color-focus: oklch(12% 0.02 151);
-  --font-display: "Noto Serif SC", "Source Han Serif SC", ui-serif, serif;
-  --font-body: "Noto Sans SC", "Source Han Sans SC", ui-sans-serif, sans-serif;
-  --font-outlier: "JetBrains Mono", ui-monospace, monospace;
-  --spacing-3xs: 0.25rem;
-  --spacing-2xs: 0.5rem;
-  --spacing-xs: 0.75rem;
-  --spacing-sm: 1rem;
-  --spacing-md: 1.5rem;
-  --spacing-lg: 2rem;
-  --spacing-xl: 3rem;
-  --spacing-2xl: 4.5rem;
-  --text-xs: 0.75rem;
-  --text-sm: 0.875rem;
-  --text-md: 1rem;
-  --text-lg: 1.25rem;
-  --text-xl: 1.563rem;
-  --text-2xl: 1.953rem;
-  --radius-card: 0.25rem;
-  --radius-input: 0.25rem;
-  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
-  --ease-in-out: cubic-bezier(0.65, 1, 0.35, 1);
-}
-```
-
-### 3. DTCG `tokens.json`
-
-```json
-{
-  "$schema": "https://design-tokens.github.io/community-group/format/",
-  "color": {
-    "paper": { "$value": "oklch(97.5% 0.009 150)", "$type": "color" },
-    "paper-2": { "$value": "oklch(94.5% 0.014 150)", "$type": "color" },
-    "ink": { "$value": "oklch(22% 0.025 155)", "$type": "color" },
-    "neutral": { "$value": "oklch(38% 0.022 155)", "$type": "color" },
-    "rule": { "$value": "oklch(86% 0.018 150)", "$type": "color" },
-    "accent": { "$value": "oklch(46% 0.115 151)", "$type": "color" },
-    "accent-ink": { "$value": "oklch(98% 0.008 150)", "$type": "color" },
-    "focus": { "$value": "oklch(12% 0.02 151)", "$type": "color" }
-  },
-  "font": {
-    "display": { "$value": "Noto Serif SC, Source Han Serif SC, ui-serif, serif", "$type": "fontFamily" },
-    "body": { "$value": "Noto Sans SC, Source Han Sans SC, ui-sans-serif, sans-serif", "$type": "fontFamily" },
-    "outlier": { "$value": "JetBrains Mono, ui-monospace, monospace", "$type": "fontFamily" }
-  },
-  "duration": {
-    "micro": { "$value": "120ms", "$type": "duration" },
-    "short": { "$value": "220ms", "$type": "duration" },
-    "long": { "$value": "420ms", "$type": "duration" }
-  }
-}
-```
-
-### 4. shadcn/ui 映射
-
-```css
-:root {
-  --background: 97.5% 0.009 150;
-  --foreground: 22% 0.025 155;
-  --card: 99% 0.004 150;
-  --card-foreground: 22% 0.025 155;
-  --popover: 99% 0.004 150;
-  --popover-foreground: 22% 0.025 155;
-  --primary: 46% 0.115 151;
-  --primary-foreground: 98% 0.008 150;
-  --secondary: 91% 0.018 150;
-  --secondary-foreground: 30% 0.024 155;
-  --muted: 94.5% 0.014 150;
-  --muted-foreground: 47% 0.019 155;
-  --accent: 46% 0.115 151;
-  --accent-foreground: 98% 0.008 150;
-  --destructive: 48% 0.15 28;
-  --destructive-foreground: 98% 0.008 150;
-  --border: 86% 0.018 150;
-  --input: 68% 0.025 150;
-  --ring: 12% 0.02 151;
-  --radius: 0.25rem;
-}
-```
+- React 页面优先使用语义 HTML、CSS Modules 和少量状态；不引入只为动效存在的大型库。
+- 后端接口只为真实页面数据服务，采用短查询与清晰响应模型，不增加无使用方的 service/repository 层。
+- 每个新增组件都应能回答：它解决了什么用户任务；无法回答就删除。
+- 前端改动至少通过 `npm run lint` 与 `npm run build`；后端改动至少通过 Ruff 与 Pytest。
