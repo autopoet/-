@@ -11,6 +11,7 @@
 - [产品需求文档](./PRD.md)
 - [产品定位](./PRODUCT.md)
 - [界面设计系统](./DESIGN.md)
+- [A+D 页面升级提示词](./UI_UPGRADE_PROMPT.md)
 - [技术架构设计](./docs/ARCHITECTURE.md)
 
 当前已经包含：

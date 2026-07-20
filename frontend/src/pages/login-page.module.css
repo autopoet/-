@@ -1,0 +1,255 @@
+.page {
+  position: relative;
+  width: min(76rem, calc(100% - 2 * var(--page-gutter)));
+  min-height: 100svh;
+  display: grid;
+  grid-template-columns: 1fr minmax(22rem, 31rem);
+  align-items: center;
+  gap: clamp(3rem, 8vw, 9rem);
+  padding-block: 7rem;
+  margin-inline: auto;
+}
+
+.signalField {
+  position: relative;
+  min-height: 30rem;
+}
+
+.signalField::before,
+.signalField::after {
+  position: absolute;
+  inset: 50% auto auto 0;
+  width: 100%;
+  height: 14rem;
+  content: "";
+  border-top: 1px solid oklch(72% 0.085 205 / 30%);
+  border-radius: 50%;
+  transform: translateY(-50%) rotate(-8deg);
+}
+
+.signalField::after {
+  height: 22rem;
+  border-color: oklch(76% 0.08 290 / 26%);
+  transform: translateY(-50%) rotate(10deg);
+}
+
+.signalField span {
+  position: absolute;
+  width: 1rem;
+  height: 1rem;
+  background: var(--color-glass-strong);
+  border: 1px solid var(--color-glass-edge);
+  border-radius: 50%;
+  box-shadow: 0 0 2rem var(--color-spectrum-aqua);
+  animation: signal-float 6s var(--ease-in) infinite alternate;
+}
+
+.signalField span:nth-child(1) {
+  inset: 28% auto auto 18%;
+}
+
+.signalField span:nth-child(2) {
+  inset: 58% auto auto 52%;
+  animation-delay: -2s;
+}
+
+.signalField span:nth-child(3) {
+  inset: 36% 12% auto auto;
+  animation-delay: -4s;
+}
+
+.authPanel {
+  position: relative;
+  padding: clamp(1.5rem, 4vw, 2.75rem);
+  background: var(--color-glass-strong);
+  border: 1px solid var(--color-glass-edge);
+  border-radius: var(--radius-glass);
+  box-shadow: var(--shadow-glass-strong);
+  backdrop-filter: blur(var(--blur-glass)) saturate(145%);
+  animation: panel-arrive 620ms var(--ease-out) both;
+}
+
+.authPanel::before {
+  position: absolute;
+  inset: -0.35rem 18% auto;
+  height: 0.5rem;
+  content: "";
+  background: var(--color-spectrum-aqua);
+  border-radius: var(--radius-pill);
+  filter: blur(0.45rem);
+  opacity: 0.7;
+}
+
+.modeSwitch {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  padding: 0.25rem;
+  background: oklch(93% 0.02 225 / 48%);
+  border: 1px solid var(--color-glass-edge);
+  border-radius: var(--radius-pill);
+}
+
+.modeSwitch button {
+  min-height: 3rem;
+  padding-inline: var(--space-sm);
+  font-weight: var(--weight-semibold);
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition:
+    color var(--dur-short) var(--ease-out),
+    background-color var(--dur-short) var(--ease-out),
+    box-shadow var(--dur-short) var(--ease-out);
+}
+
+.modeSwitch button[aria-pressed="true"] {
+  color: var(--color-ink);
+  background: var(--color-paper);
+  box-shadow: var(--shadow-glass);
+}
+
+.authPanel header {
+  margin-top: var(--space-xl);
+}
+
+.authPanel h1,
+.authPanel header p {
+  margin: 0;
+}
+
+.authPanel h1 {
+  font-size: var(--text-2xl);
+  line-height: 1.08;
+  letter-spacing: -0.055em;
+}
+
+.authPanel header p {
+  margin-top: var(--space-xs);
+  color: var(--color-text);
+  font-size: var(--text-sm);
+  line-height: 1.65;
+}
+
+.authForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  margin-top: var(--space-xl);
+}
+
+.authForm label {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+  color: var(--color-ink-2);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+}
+
+.authForm label > div {
+  min-height: 3.5rem;
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding-inline: var(--space-sm);
+  color: var(--color-muted);
+  background: oklch(100% 0 0 / 48%);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-md);
+}
+
+.authForm label > div:focus-within {
+  color: var(--color-accent);
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 0.2rem oklch(73% 0.1 205 / 18%);
+}
+
+.authForm input {
+  width: 100%;
+  min-width: 0;
+  color: var(--color-ink);
+  background: transparent;
+  border: 0;
+  outline: 0;
+}
+
+.authForm input::placeholder {
+  color: var(--color-faint);
+}
+
+.primaryButton {
+  min-height: 3.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2xs);
+  margin-top: var(--space-2xs);
+  color: var(--color-accent-ink);
+  font-weight: var(--weight-semibold);
+  background:
+    radial-gradient(circle at 32% 14%, oklch(72% 0.13 190), transparent 40%),
+    var(--color-accent);
+  border: 0;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition:
+    transform var(--dur-micro) var(--ease-out),
+    box-shadow var(--dur-short) var(--ease-out);
+}
+
+.primaryButton:active {
+  transform: scale(0.98);
+}
+
+.errorText {
+  margin: 0;
+  color: var(--color-danger);
+  font-size: var(--text-sm);
+}
+
+@keyframes signal-float {
+  to {
+    transform: translate(0.75rem, -0.9rem);
+  }
+}
+
+@keyframes panel-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(1rem) scale(0.97);
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .primaryButton:hover {
+    box-shadow: 0 1rem 2.5rem oklch(48% 0.11 205 / 24%);
+    transform: translateY(-0.1rem);
+  }
+}
+
+@media (max-width: 48rem) {
+  .page {
+    width: calc(100% - 2 * var(--space-sm));
+    grid-template-columns: 1fr;
+    padding-block: 6.5rem 7rem;
+  }
+
+  .signalField {
+    position: absolute;
+    inset: 12% -20% auto;
+    min-height: 20rem;
+    opacity: 0.52;
+  }
+
+  .authPanel {
+    width: min(100%, 31rem);
+    justify-self: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .signalField span {
+    animation: none;
+  }
+}

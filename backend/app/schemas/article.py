@@ -61,6 +61,24 @@ class RevisionListResponse(BaseModel):
     total: int
 
 
+class ContributionItem(BaseModel):
+    id: int
+    symptom_id: int
+    version_number: int
+    status: str
+    title: str
+    edit_summary: str
+    updated_at: datetime
+
+
+class ContributionOverview(BaseModel):
+    total: int
+    published: int
+    pending: int
+    drafts: int
+    recent: list[ContributionItem]
+
+
 class ReviewQueueItem(BaseModel):
     revision: ArticleRevisionItem
     base_revision: ArticleRevisionItem | None

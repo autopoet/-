@@ -1,7 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
-import { SiteFooter } from './site-footer'
-import { SiteHeader } from './site-header'
+import { SpatialChrome } from './spatial-chrome'
 
 export function AppLayout() {
   const location = useLocation()
@@ -26,6 +25,8 @@ export function AppLayout() {
       document.title = '我的提交｜电赛白皮书'
     } else if (location.pathname === '/reviews') {
       document.title = '审核队列｜电赛白皮书'
+    } else if (location.pathname === '/profile') {
+      document.title = '我的贡献｜电赛白皮书'
     } else {
       document.title = '页面未找到｜电赛白皮书'
     }
@@ -42,13 +43,18 @@ export function AppLayout() {
   }, [location.pathname, location.search])
 
   return (
-    <>
+    <div className="appShell">
       <a className="skip-link" href="#main-content">
         跳到主要内容
       </a>
-      <SiteHeader />
-      <Outlet />
-      <SiteFooter />
-    </>
+      <SpatialChrome />
+      <div
+        className="pageTransition"
+        data-fullscreen={location.pathname === '/' || location.pathname === '/login'}
+        key={`${location.pathname}:${location.search}`}
+      >
+        <Outlet />
+      </div>
+    </div>
   )
 }

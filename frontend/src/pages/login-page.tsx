@@ -1,9 +1,10 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { ArrowRight, LockKeyhole, UserRound } from 'lucide-react'
 import { type FormEvent, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { authKeys, login, register } from '../api/auth'
 import { ApiError } from '../api/client'
-import styles from './workflow-page.module.css'
+import styles from './login-page.module.css'
 
 export default function LoginPage() {
   const [mode, setMode] = useState<'login' | 'register'>('login')
@@ -26,72 +27,93 @@ export default function LoginPage() {
   }
 
   return (
-    <main id="main-content" className={styles.narrowPage}>
-      <header className={styles.pageTitle}>
-        <h1>{mode === 'login' ? '登录' : '注册'}</h1>
-        <p>
-          {mode === 'login'
-            ? '登录后可直接在文档中修改，并提交审核。'
-            : '账户用于记录每次修改；公开版本仍需审核通过。'}
-        </p>
-      </header>
-
-      <div className={styles.modeSwitch} aria-label="登录方式">
-        <button
-          type="button"
-          aria-pressed={mode === 'login'}
-          onClick={() => setMode('login')}
-        >
-          登录
-        </button>
-        <button
-          type="button"
-          aria-pressed={mode === 'register'}
-          onClick={() => setMode('register')}
-        >
-          注册
-        </button>
+    <main id="main-content" className={styles.page}>
+      <div className={styles.signalField} aria-hidden="true">
+        <span />
+        <span />
+        <span />
       </div>
 
-      <form className={styles.authForm} onSubmit={handleSubmit}>
-        <label>
-          用户名
-          <input
-            required
-            minLength={3}
-            maxLength={32}
-            autoComplete="username"
-            value={username}
-            onChange={(event) => setUsername(event.target.value)}
-          />
-        </label>
-        <label>
-          密码
-          <input
-            required
-            minLength={8}
-            maxLength={128}
-            type="password"
-            autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-          />
-        </label>
-        {authMutation.isError ? (
-          <p className={styles.errorText} role="alert">
-            {authMutation.error instanceof ApiError
-              ? authMutation.error.message
-              : '操作失败，请重试'}
+      <section className={styles.authPanel} aria-labelledby="auth-title">
+        <div className={styles.modeSwitch} aria-label="登录方式">
+          <button
+            type="button"
+            aria-pressed={mode === 'login'}
+            onClick={() => setMode('login')}
+          >
+            登录
+          </button>
+          <button
+            type="button"
+            aria-pressed={mode === 'register'}
+            onClick={() => setMode('register')}
+          >
+            注册
+          </button>
+        </div>
+
+        <header>
+          <h1 id="auth-title">{mode === 'login' ? '欢迎回来' : '建立贡献身份'}</h1>
+          <p>
+            {mode === 'login'
+              ? '继续阅读、修改和审核电赛 Debug 文档。'
+              : '每次修改都会记录你的名字，并在审核后公开。'}
           </p>
-        ) : null}
-        <button className={styles.primaryButton} type="submit" disabled={authMutation.isPending}>
-          {authMutation.isPending
-            ? '正在处理…'
-            : mode === 'login'
-              ? '登录'
-              : '创建账号'}
-        </button>
-      </form>
+        </header>
+
+        <form className={styles.authForm} onSubmit={handleSubmit}>
+          <label>
+            <span>用户名</span>
+            <div>
+              <UserRound aria-hidden="true" size={19} />
+              <input
+                required
+                minLength={3}
+                maxLength={32}
+                autoComplete="username"
+                value={username}
+                placeholder="输入用户名"
+                onChange={(event) => setUsername(event.target.value)}
+              />
+            </div>
+          </label>
+          <label>
+            <span>密码</span>
+            <div>
+              <LockKeyhole aria-hidden="true" size={19} />
+              <input
+                required
+                minLength={8}
+                maxLength={128}
+                type="password"
+                autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+                value={password}
+                placeholder="至少 8 个字符"
+                onChange={(event) => setPassword(event.target.value)}
+              />
+            </div>
+          </label>
+          {authMutation.isError ? (
+            <p className={styles.errorText} role="alert">
+              {authMutation.error instanceof ApiError
+                ? authMutation.error.message
+                : '操作失败，请重试'}
+            </p>
+          ) : null}
+          <button
+            className={styles.primaryButton}
+            type="submit"
+            disabled={authMutation.isPending}
+          >
+            {authMutation.isPending
+              ? '正在处理…'
+              : mode === 'login'
+                ? '进入知识库'
+                : '创建账号'}
+            <ArrowRight aria-hidden="true" size={18} />
+          </button>
+        </form>
+      </section>
     </main>
   )
 }

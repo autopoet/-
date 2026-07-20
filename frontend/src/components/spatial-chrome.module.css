@@ -1,0 +1,320 @@
+.ambient {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-ambient);
+  overflow: hidden;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      circle at var(--pointer-x) var(--pointer-y),
+      var(--color-spectrum-aqua) 0,
+      transparent 18rem
+    ),
+    radial-gradient(
+      circle at 4% 78%,
+      var(--color-spectrum-blue) 0,
+      transparent 24rem
+    ),
+    radial-gradient(
+      circle at 96% 16%,
+      var(--color-spectrum-violet) 0,
+      transparent 26rem
+    ),
+    var(--color-canvas);
+}
+
+.ambient::before,
+.ambient::after {
+  position: absolute;
+  width: 40rem;
+  height: 40rem;
+  content: "";
+  border: 1px solid var(--color-glass-edge);
+  border-radius: 50%;
+  box-shadow:
+    0 0 5rem var(--color-spectrum-aqua),
+    inset 0 0 4rem var(--color-spectrum-violet);
+  opacity: 0.38;
+  filter: blur(1px);
+}
+
+.ambient::before {
+  inset: -24rem -15rem auto auto;
+}
+
+.ambient::after {
+  inset: auto auto -27rem -17rem;
+}
+
+.signalLine {
+  position: absolute;
+  inset: 12% auto auto -5%;
+  width: 110%;
+  height: 55%;
+  border-top: 1px solid oklch(78% 0.065 215 / 24%);
+  border-radius: 50%;
+  transform: rotate(-5deg);
+}
+
+.brand {
+  position: fixed;
+  inset-block-start: 1.65rem;
+  inset-inline-start: var(--page-gutter);
+  z-index: var(--z-sticky);
+  min-height: 2.75rem;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2xs);
+  color: var(--color-ink);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-bold);
+  letter-spacing: -0.03em;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.brand svg {
+  color: var(--color-accent);
+}
+
+.searchDock {
+  position: fixed;
+  inset-block-start: 1.25rem;
+  inset-inline-end: var(--page-gutter);
+  z-index: var(--z-dropdown);
+  width: 3.5rem;
+  min-height: 3.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2xs);
+  padding: 0.35rem;
+  color: var(--color-ink-2);
+  background: var(--color-glass);
+  border: 1px solid var(--color-glass-edge);
+  border-radius: var(--radius-pill);
+  box-shadow: var(--shadow-glass);
+  backdrop-filter: blur(var(--blur-glass)) saturate(135%);
+  transition:
+    width var(--dur-medium) var(--ease-out),
+    background-color var(--dur-short) var(--ease-out);
+}
+
+.searchDock[data-open="true"] {
+  width: min(28rem, calc(100vw - 2 * var(--page-gutter)));
+  justify-content: flex-start;
+  padding-inline-start: var(--space-sm);
+  background: var(--color-glass-strong);
+}
+
+.searchDock input {
+  width: 100%;
+  min-width: 0;
+  color: var(--color-ink);
+  background: transparent;
+  border: 0;
+  outline: 0;
+}
+
+.searchDock input::placeholder {
+  color: var(--color-muted);
+}
+
+.searchDock button {
+  width: 2.75rem;
+  height: 2.75rem;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.searchDock .searchSubmit {
+  color: var(--color-accent-ink);
+  background: var(--color-accent);
+}
+
+.radialNav {
+  position: fixed;
+  inset-inline-start: clamp(0.75rem, 2.5vw, 2.5rem);
+  inset-block-end: clamp(0.75rem, 2.5vw, 2.5rem);
+  z-index: var(--z-sticky);
+  width: 10.5rem;
+  height: 10.5rem;
+}
+
+.radialCenter,
+.radialItem {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  width: 3.5rem;
+  height: 3.5rem;
+  display: grid;
+  place-items: center;
+  color: var(--color-ink-2);
+  text-decoration: none;
+  background: var(--color-glass);
+  border: 1px solid var(--color-glass-edge);
+  border-radius: 50%;
+  box-shadow: var(--shadow-glass);
+  backdrop-filter: blur(var(--blur-glass)) saturate(140%);
+}
+
+.radialCenter {
+  z-index: 2;
+  color: var(--color-accent-ink);
+  background:
+    radial-gradient(circle at 35% 24%, oklch(76% 0.12 190), transparent 40%),
+    var(--color-accent);
+  border-color: oklch(96% 0.02 205 / 88%);
+  cursor: pointer;
+  transform: translate(-50%, -50%);
+  transition:
+    transform var(--dur-short) var(--ease-spring),
+    box-shadow var(--dur-short) var(--ease-out);
+}
+
+.radialItem {
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, -50%) scale(0.72);
+  transition:
+    opacity var(--dur-short) var(--ease-out),
+    transform var(--dur-medium) var(--ease-spring);
+}
+
+.radialItem span {
+  position: absolute;
+  inset-inline-start: calc(100% + var(--space-2xs));
+  padding: 0.35rem 0.55rem;
+  color: var(--color-ink-2);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  white-space: nowrap;
+  background: var(--color-glass-strong);
+  border: 1px solid var(--color-glass-edge);
+  border-radius: var(--radius-pill);
+  opacity: 0;
+  transform: translateX(-0.35rem);
+  transition:
+    opacity var(--dur-short) var(--ease-out),
+    transform var(--dur-short) var(--ease-out);
+}
+
+.radialNav[data-open="true"] .radialItem,
+.radialNav:hover .radialItem,
+.radialNav:focus-within .radialItem {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.radialNav[data-open="true"] .satellite0,
+.radialNav:hover .satellite0,
+.radialNav:focus-within .satellite0 {
+  transform: translate(-50%, -50%) translateY(-4.6rem);
+}
+
+.radialNav[data-open="true"] .satellite1,
+.radialNav:hover .satellite1,
+.radialNav:focus-within .satellite1 {
+  transform: translate(-50%, -50%) translateX(4.6rem);
+}
+
+.radialNav[data-open="true"] .satellite2,
+.radialNav:hover .satellite2,
+.radialNav:focus-within .satellite2 {
+  transform: translate(-50%, -50%) translateY(4.6rem);
+}
+
+.radialNav[data-open="true"] .radialItem span,
+.radialNav:hover .radialItem span,
+.radialNav:focus-within .radialItem span {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.mobileDock {
+  display: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .brand:hover {
+    color: var(--color-accent);
+  }
+
+  .searchDock button:hover,
+  .radialItem:hover {
+    color: var(--color-accent);
+    background: var(--color-glass-strong);
+  }
+
+  .radialCenter:hover {
+    color: var(--color-accent-ink);
+    transform: translate(-50%, -50%) scale(1.05);
+    box-shadow: var(--shadow-glass-strong);
+  }
+}
+
+@media (max-width: 48rem) {
+  .brand {
+    inset-block-start: 0.75rem;
+    font-size: var(--text-md);
+  }
+
+  .searchDock {
+    inset-block-start: 0.55rem;
+  }
+
+  .radialNav {
+    display: none;
+  }
+
+  .mobileDock {
+    position: fixed;
+    inset-inline: 50% auto;
+    inset-block-end: max(0.5rem, env(safe-area-inset-bottom));
+    z-index: var(--z-sticky);
+    width: min(25rem, calc(100vw - 1rem));
+    min-height: 4.25rem;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    padding: 0.35rem;
+    background: var(--color-glass-strong);
+    border: 1px solid var(--color-glass-edge);
+    border-radius: var(--radius-pill);
+    box-shadow: var(--shadow-glass-strong);
+    backdrop-filter: blur(var(--blur-glass)) saturate(145%);
+    transform: translateX(-50%);
+  }
+
+  .mobileDock a {
+    min-width: 0;
+    min-height: 3.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.15rem;
+    color: var(--color-muted);
+    font-size: 0.625rem;
+    text-decoration: none;
+    border-radius: var(--radius-pill);
+  }
+
+  .mobileDock a[aria-current="page"] {
+    color: var(--color-accent-ink);
+    background: var(--color-accent);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ambient {
+    --pointer-x: 50% !important;
+    --pointer-y: 30% !important;
+  }
+}

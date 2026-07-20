@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { LoaderCircle, Search, X } from 'lucide-react'
+import { LoaderCircle, Search, Sparkles, X } from 'lucide-react'
 import {
   type FormEvent,
   type KeyboardEvent,
@@ -187,7 +187,9 @@ export function SearchForm({
         <button
           className={styles.submitButton}
           type="submit"
+          aria-label="开始搜索"
         >
+          <Sparkles aria-hidden="true" size={19} />
           <span>查找</span>
         </button>
       </div>

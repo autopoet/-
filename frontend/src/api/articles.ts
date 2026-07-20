@@ -33,6 +33,24 @@ export type RevisionListResponse = {
   total: number
 }
 
+export type ContributionItem = {
+  id: number
+  symptom_id: number
+  version_number: number
+  status: ArticleRevision['status']
+  title: string
+  edit_summary: string
+  updated_at: string
+}
+
+export type ContributionOverview = {
+  total: number
+  published: number
+  pending: number
+  drafts: number
+  recent: ContributionItem[]
+}
+
 export type ReviewQueueItem = {
   revision: ArticleRevision
   base_revision: ArticleRevision | null
@@ -48,6 +66,7 @@ export const articleKeys = {
   versions: (symptomId: number) => ['articles', symptomId, 'versions'] as const,
   draft: (symptomId: number) => ['articles', symptomId, 'draft'] as const,
   mine: ['articles', 'mine'] as const,
+  overview: ['articles', 'mine', 'overview'] as const,
   reviews: ['reviews'] as const,
 }
 
@@ -84,6 +103,10 @@ export function submitDraft(symptomId: number) {
 
 export function listMyRevisions(signal?: AbortSignal) {
   return apiRequest<RevisionListResponse>('/articles/mine', { signal })
+}
+
+export function getContributionOverview(signal?: AbortSignal) {
+  return apiRequest<ContributionOverview>('/articles/mine/overview', { signal })
 }
 
 export function listPendingReviews(signal?: AbortSignal) {
