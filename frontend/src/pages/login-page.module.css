@@ -1,146 +1,127 @@
+/* Hallmark · genre: editorial · macrostructure: Identity Form
+ * design-system: DESIGN.md · designed-as-app · motion: field-arrive / mode-change / button-press
+ */
+
 .page {
   position: relative;
-  width: min(76rem, calc(100% - 2 * var(--page-gutter)));
+  isolation: isolate;
   min-height: 100svh;
   display: grid;
-  grid-template-columns: 1fr minmax(22rem, 31rem);
-  align-items: center;
-  gap: clamp(3rem, 8vw, 9rem);
-  padding-block: 7rem;
-  margin-inline: auto;
+  place-items: center;
+  padding: 7rem var(--space-sm) 4rem;
+  overflow: clip;
 }
 
 .signalField {
-  position: relative;
-  min-height: 30rem;
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image:
+    linear-gradient(var(--color-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--color-grid) 1px, transparent 1px);
+  background-size: 4rem 4rem;
+  mask-image: linear-gradient(to bottom, transparent, var(--color-ink) 20%, transparent 88%);
 }
 
-.signalField::before,
 .signalField::after {
   position: absolute;
-  inset: 50% auto auto 0;
-  width: 100%;
-  height: 14rem;
+  inset: 0;
   content: "";
-  border-top: 1px solid oklch(72% 0.085 205 / 30%);
-  border-radius: 50%;
-  transform: translateY(-50%) rotate(-8deg);
-}
-
-.signalField::after {
-  height: 22rem;
-  border-color: oklch(76% 0.08 290 / 26%);
-  transform: translateY(-50%) rotate(10deg);
+  background: var(--color-canvas);
+  opacity: 0.55;
 }
 
 .signalField span {
   position: absolute;
-  width: 1rem;
-  height: 1rem;
-  background: var(--color-glass-strong);
-  border: 1px solid var(--color-glass-edge);
+  width: 26rem;
+  aspect-ratio: 1;
   border-radius: 50%;
-  box-shadow: 0 0 2rem var(--color-spectrum-aqua);
-  animation: signal-float 6s var(--ease-in) infinite alternate;
+  filter: blur(5rem);
 }
 
 .signalField span:nth-child(1) {
-  inset: 28% auto auto 18%;
+  inset: 18% auto auto -10rem;
+  background: var(--color-spectrum-aqua);
 }
 
 .signalField span:nth-child(2) {
-  inset: 58% auto auto 52%;
-  animation-delay: -2s;
+  inset: 10% -9rem auto auto;
+  background: var(--color-spectrum-sky);
 }
 
 .signalField span:nth-child(3) {
-  inset: 36% 12% auto auto;
-  animation-delay: -4s;
+  inset: auto 22% 2% auto;
+  width: 18rem;
+  background: var(--color-spectrum-rose);
 }
 
 .authPanel {
-  position: relative;
-  padding: clamp(1.5rem, 4vw, 2.75rem);
-  background: var(--color-glass-strong);
-  border: 1px solid var(--color-glass-edge);
-  border-radius: var(--radius-glass);
-  box-shadow: var(--shadow-glass-strong);
-  backdrop-filter: blur(var(--blur-glass)) saturate(145%);
-  animation: panel-arrive 620ms var(--ease-out) both;
-}
-
-.authPanel::before {
-  position: absolute;
-  inset: -0.35rem 18% auto;
-  height: 0.5rem;
-  content: "";
-  background: var(--color-spectrum-aqua);
-  border-radius: var(--radius-pill);
-  filter: blur(0.45rem);
-  opacity: 0.7;
+  width: min(100%, 28rem);
+  padding-block: var(--space-lg);
+  animation: field-arrive var(--dur-long) var(--ease-out) both;
 }
 
 .modeSwitch {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  padding: 0.25rem;
-  background: oklch(93% 0.02 225 / 48%);
-  border: 1px solid var(--color-glass-edge);
-  border-radius: var(--radius-pill);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border-block: 1px solid var(--color-rule-strong);
 }
 
 .modeSwitch button {
-  min-height: 3rem;
-  padding-inline: var(--space-sm);
+  position: relative;
+  min-height: 3.5rem;
+  color: var(--color-muted);
   font-weight: var(--weight-semibold);
   background: transparent;
   border: 0;
-  border-radius: var(--radius-pill);
   cursor: pointer;
+  white-space: nowrap;
+}
+
+.modeSwitch button::after {
+  position: absolute;
+  inset: auto 22% -1px;
+  height: 2px;
+  content: "";
+  background: var(--color-accent);
+  opacity: 0;
+  transform: scaleX(0.4);
   transition:
-    color var(--dur-short) var(--ease-out),
-    background-color var(--dur-short) var(--ease-out),
-    box-shadow var(--dur-short) var(--ease-out);
+    opacity var(--dur-short) var(--ease-out),
+    transform var(--dur-short) var(--ease-out);
 }
 
 .modeSwitch button[aria-pressed="true"] {
-  color: var(--color-ink);
-  background: var(--color-paper);
-  box-shadow: var(--shadow-glass);
+  color: var(--color-accent);
+}
+
+.modeSwitch button[aria-pressed="true"]::after {
+  opacity: 1;
+  transform: scaleX(1);
 }
 
 .authPanel header {
-  margin-top: var(--space-xl);
-}
-
-.authPanel h1,
-.authPanel header p {
-  margin: 0;
+  padding-block: var(--space-xl) var(--space-sm);
+  text-align: center;
 }
 
 .authPanel h1 {
-  font-size: var(--text-2xl);
-  line-height: 1.08;
-  letter-spacing: -0.055em;
-}
-
-.authPanel header p {
-  margin-top: var(--space-xs);
-  color: var(--color-text);
-  font-size: var(--text-sm);
-  line-height: 1.65;
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.9rem, 8vw, 2.5rem);
+  font-style: normal;
+  line-height: 1.15;
+  letter-spacing: -0.035em;
 }
 
 .authForm {
-  display: flex;
-  flex-direction: column;
+  display: grid;
   gap: var(--space-md);
-  margin-top: var(--space-xl);
+  margin-top: var(--space-lg);
 }
 
 .authForm label {
-  display: flex;
-  flex-direction: column;
+  display: grid;
   gap: var(--space-2xs);
   color: var(--color-ink-2);
   font-size: var(--text-sm);
@@ -152,104 +133,86 @@
   display: flex;
   align-items: center;
   gap: var(--space-xs);
-  padding-inline: var(--space-sm);
   color: var(--color-muted);
-  background: oklch(100% 0 0 / 48%);
-  border: 1px solid var(--color-rule);
-  border-radius: var(--radius-md);
+  border-bottom: 1px solid var(--color-rule-strong);
 }
 
 .authForm label > div:focus-within {
   color: var(--color-accent);
   border-color: var(--color-accent);
-  box-shadow: 0 0 0 0.2rem oklch(73% 0.1 205 / 18%);
 }
 
 .authForm input {
   width: 100%;
   min-width: 0;
+  min-height: 2.75rem;
   color: var(--color-ink);
   background: transparent;
   border: 0;
   outline: 0;
 }
 
+.authForm label > div:has(input:focus-visible) {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 3px;
+}
+
 .authForm input::placeholder {
-  color: var(--color-faint);
+  color: var(--color-muted);
 }
 
 .primaryButton {
-  min-height: 3.75rem;
+  min-height: 3.5rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: var(--space-2xs);
-  margin-top: var(--space-2xs);
+  margin-top: var(--space-sm);
   color: var(--color-accent-ink);
   font-weight: var(--weight-semibold);
-  background:
-    radial-gradient(circle at 32% 14%, oklch(72% 0.13 190), transparent 40%),
-    var(--color-accent);
-  border: 0;
-  border-radius: var(--radius-pill);
+  background: var(--color-accent);
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius-sm);
   cursor: pointer;
+  white-space: nowrap;
   transition:
-    transform var(--dur-micro) var(--ease-out),
-    box-shadow var(--dur-short) var(--ease-out);
+    background-color var(--dur-short) var(--ease-out),
+    transform var(--dur-micro) var(--ease-out);
 }
 
 .primaryButton:active {
+  background: var(--color-accent-active);
   transform: scale(0.98);
 }
 
 .errorText {
+  min-height: 1lh;
   margin: 0;
   color: var(--color-danger);
   font-size: var(--text-sm);
 }
 
-@keyframes signal-float {
-  to {
-    transform: translate(0.75rem, -0.9rem);
-  }
-}
-
-@keyframes panel-arrive {
-  from {
-    opacity: 0;
-    transform: translateY(1rem) scale(0.97);
-  }
-}
-
 @media (hover: hover) and (pointer: fine) {
   .primaryButton:hover {
-    box-shadow: 0 1rem 2.5rem oklch(48% 0.11 205 / 24%);
-    transform: translateY(-0.1rem);
+    background: var(--color-accent-hover);
   }
 }
 
-@media (max-width: 48rem) {
+@media (min-width: 40rem) {
   .page {
-    width: calc(100% - 2 * var(--space-sm));
-    grid-template-columns: 1fr;
-    padding-block: 6.5rem 7rem;
+    padding-inline: var(--page-gutter);
   }
+}
 
-  .signalField {
-    position: absolute;
-    inset: 12% -20% auto;
-    min-height: 20rem;
-    opacity: 0.52;
-  }
-
-  .authPanel {
-    width: min(100%, 31rem);
-    justify-self: center;
+@keyframes field-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(var(--space-xs));
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .signalField span {
-    animation: none;
+  .authPanel {
+    animation-duration: var(--dur-micro);
   }
 }

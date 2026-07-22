@@ -1,55 +1,90 @@
+/* Hallmark · component: search · genre: editorial · voice: diagnostic frequency
+ * states: default · hover · focus · active · disabled · loading · error · success
+ * contrast: token-locked · motion: single scan / action press
+ */
+
 .form {
   position: relative;
   width: 100%;
 }
 
 .control {
+  position: relative;
+  isolation: isolate;
   min-height: 4rem;
   display: flex;
   align-items: center;
-  gap: var(--space-2xs);
-  padding: 0.38rem;
-  padding-inline-start: var(--space-md);
-  background: var(--color-glass-strong);
-  border: 1px solid var(--color-glass-edge);
-  border-radius: var(--radius-pill);
-  box-shadow: var(--shadow-glass);
-  backdrop-filter: blur(var(--blur-glass)) saturate(145%);
+  gap: var(--space-xs);
+  padding-block: var(--space-2xs);
+  color: var(--color-ink);
+  background: transparent;
+  border-block: 1px solid var(--color-rule-strong);
+}
+
+.control::before {
+  position: absolute;
+  inset: 50% 0 auto;
+  z-index: -1;
+  height: 1px;
+  content: "";
+  background: var(--color-track-soft);
+  opacity: 0;
+  transform: scaleX(0.25);
   transition:
-    box-shadow var(--dur-short) var(--ease-out),
-    transform var(--dur-short) var(--ease-out);
+    opacity var(--dur-short) var(--ease-out),
+    transform var(--dur-medium) var(--ease-out);
+}
+
+.control::after {
+  position: absolute;
+  inset: 0 auto 0 -0.35rem;
+  width: 0.35rem;
+  content: "";
+  background: var(--color-accent-soft);
+  opacity: 0;
+  transform: translateX(0);
+  pointer-events: none;
 }
 
 .hero .control {
-  min-height: 6.25rem;
-  padding-inline-start: clamp(1.25rem, 4vw, 2.5rem);
-  box-shadow: var(--shadow-glass-strong);
+  min-height: 4.75rem;
 }
 
-.form:focus-within .control {
-  box-shadow:
-    var(--shadow-glass-strong),
-    0 0 0 0.2rem oklch(73% 0.1 205 / 24%);
+.form:focus-within .control::before {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+.form:focus-within .control::after {
+  animation: search-scan 520ms var(--ease-out) both;
+}
+
+.form:has(.input:focus-visible) .control {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 4px;
 }
 
 .form:has(.input[aria-invalid="true"]) .control {
-  box-shadow:
-    var(--shadow-glass-strong),
-    0 0 0 0.2rem oklch(70% 0.13 28 / 24%);
+  border-color: var(--color-danger);
 }
 
 .searchIcon {
+  position: relative;
+  z-index: 1;
   flex: 0 0 auto;
-  color: var(--color-muted);
+  color: var(--color-accent);
+  transition: transform var(--dur-short) var(--ease-out);
 }
 
-.hero .searchIcon {
-  display: none;
+.form:focus-within .searchIcon {
+  transform: translateX(var(--space-3xs));
 }
 
 .input {
   width: 100%;
   min-width: 0;
+  min-height: 2.75rem;
+  padding: 0;
   color: var(--color-ink);
   font-size: var(--text-md);
   line-height: 1.5;
@@ -59,7 +94,7 @@
 }
 
 .hero .input {
-  font-size: clamp(1rem, 2vw, 1.35rem);
+  font-size: clamp(1rem, 2vw, 1.18rem);
 }
 
 .input::placeholder {
@@ -79,41 +114,30 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  padding: 0;
   border: 0;
-  border-radius: var(--radius-pill);
   cursor: pointer;
 }
 
 .clearButton {
-  padding: 0;
   color: var(--color-muted);
   background: transparent;
 }
 
 .submitButton {
-  gap: var(--space-2xs);
-  padding-inline: var(--space-md);
   color: var(--color-accent-ink);
-  font-size: var(--text-sm);
-  font-weight: var(--weight-semibold);
-  background:
-    radial-gradient(circle at 34% 24%, oklch(76% 0.12 190), transparent 42%),
-    var(--color-accent);
+  background: var(--color-accent);
+  border-radius: 50%;
   transition:
     background-color var(--dur-short) var(--ease-out),
     transform var(--dur-micro) var(--ease-out);
 }
 
-.hero .submitButton {
-  width: 5rem;
-  height: 5rem;
-  padding: 0;
-  box-shadow:
-    inset 0 1px 0 oklch(100% 0 0 / 68%),
-    0 0 2.5rem oklch(63% 0.14 195 / 28%);
+.submitButton svg {
+  transition: transform var(--dur-short) var(--ease-out);
 }
 
-.hero .submitButton span {
+.submitButton span {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -121,9 +145,14 @@
   clip: rect(0, 0, 0, 0);
 }
 
+.hero .submitButton {
+  min-width: 3.25rem;
+  min-height: 3.25rem;
+}
+
 .submitButton:active {
   background: var(--color-accent-active);
-  transform: scale(0.97);
+  transform: scale(0.96);
 }
 
 .loader {
@@ -134,14 +163,10 @@
 
 .validation {
   min-height: 1lh;
-  margin: var(--space-2xs) var(--space-md) 0;
+  margin: var(--space-2xs) 0 0;
   color: var(--color-muted);
   font-size: var(--text-xs);
   line-height: 1.5;
-}
-
-.hero .validation {
-  text-align: center;
 }
 
 .validation[data-error="true"] {
@@ -150,19 +175,18 @@
 
 .suggestions {
   position: absolute;
-  inset-block-start: calc(100% + var(--space-2xs));
+  inset-block-start: calc(100% + var(--space-xs));
   inset-inline: 0;
   z-index: var(--z-dropdown);
   max-height: min(28rem, 60dvh);
   padding: var(--space-2xs);
   overflow-y: auto;
-  background: var(--color-glass-strong);
-  border: 1px solid var(--color-glass-edge);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-glass-strong);
-  backdrop-filter: blur(var(--blur-glass)) saturate(145%);
+  color: var(--color-ink);
+  background: var(--color-paper);
+  border: 1px solid var(--color-rule-strong);
+  box-shadow: var(--shadow-paper-raised);
   transform-origin: top center;
-  animation: suggestions-in var(--dur-medium) var(--ease-out) both;
+  animation: suggestions-in var(--dur-short) var(--ease-out) both;
 }
 
 .suggestion {
@@ -178,25 +202,29 @@
   text-align: start;
   background: transparent;
   border: 0;
-  border-radius: var(--radius-md);
+  border-bottom: 1px solid var(--color-rule);
   cursor: pointer;
+}
+
+.suggestion:last-of-type {
+  border-bottom: 0;
 }
 
 .suggestionActive {
   color: var(--color-accent);
-  background: var(--color-accent-soft);
+  background: var(--color-paper-muted);
 }
 
 .suggestionTitle {
   max-width: 100%;
-  color: var(--color-ink);
-  font-weight: var(--weight-semibold);
+  color: inherit;
+  font-weight: var(--weight-bold);
 }
 
 .suggestionDescription {
   max-width: 100%;
   overflow: hidden;
-  color: var(--color-muted);
+  color: var(--color-text);
   font-size: var(--text-sm);
   line-height: 1.5;
   text-overflow: ellipsis;
@@ -206,7 +234,7 @@
 .suggestionMessage {
   margin: 0;
   padding: var(--space-md) var(--space-sm);
-  color: var(--color-muted);
+  color: var(--color-text);
   font-size: var(--text-sm);
   line-height: 1.6;
   text-align: center;
@@ -223,27 +251,22 @@
   border: 0;
   border-top: 1px solid var(--color-rule);
   cursor: pointer;
+  white-space: nowrap;
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .control:hover {
-    transform: translateY(-0.1rem);
-  }
-
   .clearButton:hover {
     color: var(--color-ink);
-    background: var(--color-glass);
   }
 
-  .submitButton:hover {
-    background-color: var(--color-accent-hover);
-    transform: scale(1.025);
+  .submitButton:hover svg {
+    transform: translateX(var(--space-3xs));
   }
 
   .suggestion:hover,
   .viewAll:hover {
     color: var(--color-accent);
-    background: var(--color-accent-soft);
+    background: var(--color-paper-muted);
   }
 }
 
@@ -256,31 +279,29 @@
 @keyframes suggestions-in {
   from {
     opacity: 0;
-    transform: translateY(-0.5rem) scale(0.98);
+    transform: translateY(calc(-1 * var(--space-2xs)));
   }
 }
 
-@media (max-width: 40rem) {
-  .control,
-  .hero .control {
-    min-height: 3.75rem;
-    padding-inline-start: var(--space-sm);
+@keyframes search-scan {
+  0% {
+    opacity: 0;
+    transform: translateX(0);
   }
 
-  .hero .submitButton {
-    width: 3.1rem;
-    height: 3.1rem;
+  30% {
+    opacity: 0.75;
   }
 
-  .hero .input {
-    font-size: var(--text-md);
+  100% {
+    opacity: 0;
+    transform: translateX(45rem);
   }
+}
 
-  .submitButton span {
-    display: none;
-  }
-
-  .validation {
-    margin-inline: var(--space-sm);
+@media (prefers-reduced-motion: reduce) {
+  .control::after,
+  .suggestions {
+    animation-duration: var(--dur-micro);
   }
 }

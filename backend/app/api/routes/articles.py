@@ -8,6 +8,7 @@ from peewee import fn
 from app.api.dependencies import get_current_user
 from app.db.database import database_connection
 from app.models.article_revision import ArticleRevision
+from app.models.favorite import Favorite
 from app.models.symptom import Symptom
 from app.models.user import User
 from app.schemas.article import (
@@ -15,6 +16,9 @@ from app.schemas.article import (
     ArticleRevisionItem,
     ContributionItem,
     ContributionOverview,
+    FavoriteItem,
+    FavoriteListResponse,
+    FavoriteState,
     RevisionListResponse,
 )
 
@@ -31,9 +35,7 @@ def serialize_revision(revision: ArticleRevision) -> ArticleRevisionItem:
         author_id=revision.author_id,
         author_name=revision.author.username,
         reviewer_id=revision.reviewer_id,
-        reviewer_name=(
-            revision.reviewer.username if revision.reviewer_id else None
-        ),
+        reviewer_name=(revision.reviewer.username if revision.reviewer_id else None),
         base_revision_id=revision.base_revision_id,
         version_number=revision.version_number,
         status=revision.status,
@@ -88,14 +90,9 @@ def get_contribution_overview(
     )
     return ContributionOverview(
         total=len(revisions),
-        published=sum(
-            revision.status in {"approved", "superseded"}
-            for revision in revisions
-        ),
+        published=sum(revision.status in {"approved", "superseded"} for revision in revisions),
         pending=sum(revision.status == "pending" for revision in revisions),
-        drafts=sum(
-            revision.status in {"draft", "rejected"} for revision in revisions
-        ),
+        drafts=sum(revision.status in {"draft", "rejected"} for revision in revisions),
         recent=[
             ContributionItem(
                 id=revision.id,
@@ -111,16 +108,74 @@ def get_contribution_overview(
     )
 
 
+@router.get("/favorites", response_model=FavoriteListResponse)
+def list_favorites(
+    current_user: Annotated[User, Depends(get_current_user)],
+) -> FavoriteListResponse:
+    favorites = list(
+        Favorite.select(Favorite, Symptom)
+        .join(Symptom)
+        .where(Favorite.user == current_user)
+        .order_by(Favorite.created_at.desc())
+    )
+    return FavoriteListResponse(
+        items=[
+            FavoriteItem(
+                symptom_id=favorite.symptom_id,
+                name=favorite.symptom.name,
+                description=favorite.symptom.description,
+                created_at=favorite.created_at,
+            )
+            for favorite in favorites
+        ],
+        total=len(favorites),
+    )
+
+
+@router.get("/{symptom_id}/favorite", response_model=FavoriteState)
+def get_favorite_state(
+    symptom_id: int,
+    current_user: Annotated[User, Depends(get_current_user)],
+) -> FavoriteState:
+    get_symptom_or_404(symptom_id)
+    return FavoriteState(
+        favorited=Favorite.select()
+        .where((Favorite.user == current_user) & (Favorite.symptom == symptom_id))
+        .exists()
+    )
+
+
+@router.post("/{symptom_id}/favorite", response_model=FavoriteState)
+def add_favorite(
+    symptom_id: int,
+    current_user: Annotated[User, Depends(get_current_user)],
+) -> FavoriteState:
+    symptom = get_symptom_or_404(symptom_id)
+    Favorite.get_or_create(user=current_user, symptom=symptom)
+    return FavoriteState(favorited=True)
+
+
+@router.delete("/{symptom_id}/favorite", response_model=FavoriteState)
+def remove_favorite(
+    symptom_id: int,
+    current_user: Annotated[User, Depends(get_current_user)],
+) -> FavoriteState:
+    get_symptom_or_404(symptom_id)
+    (
+        Favorite.delete()
+        .where((Favorite.user == current_user) & (Favorite.symptom == symptom_id))
+        .execute()
+    )
+    return FavoriteState(favorited=False)
+
+
 @router.get("/{symptom_id}", response_model=ArticleRevisionItem)
 def get_published_article(symptom_id: int) -> ArticleRevisionItem:
     get_symptom_or_404(symptom_id)
     revision = (
         ArticleRevision.select(ArticleRevision, User)
         .join(User, on=(ArticleRevision.author == User.id))
-        .where(
-            (ArticleRevision.symptom == symptom_id)
-            & (ArticleRevision.status == "approved")
-        )
+        .where((ArticleRevision.symptom == symptom_id) & (ArticleRevision.status == "approved"))
         .order_by(ArticleRevision.published_at.desc())
         .first()
     )
@@ -205,17 +260,12 @@ def save_draft(
     if revision is None:
         base_revision = (
             ArticleRevision.select()
-            .where(
-                (ArticleRevision.symptom == symptom)
-                & (ArticleRevision.status == "approved")
-            )
+            .where((ArticleRevision.symptom == symptom) & (ArticleRevision.status == "approved"))
             .order_by(ArticleRevision.published_at.desc())
             .first()
         )
         next_version = (
-            ArticleRevision.select(
-                fn.COALESCE(fn.MAX(ArticleRevision.version_number), 0) + 1
-            )
+            ArticleRevision.select(fn.COALESCE(fn.MAX(ArticleRevision.version_number), 0) + 1)
             .where(ArticleRevision.symptom == symptom)
             .scalar()
         )
@@ -227,9 +277,7 @@ def save_draft(
             **values,
         )
     else:
-        ArticleRevision.update(**values).where(
-            ArticleRevision.id == revision.id
-        ).execute()
+        ArticleRevision.update(**values).where(ArticleRevision.id == revision.id).execute()
         revision = ArticleRevision.get_by_id(revision.id)
 
     revision.author = current_user
@@ -266,10 +314,7 @@ def submit_draft(
 
     current_published = (
         ArticleRevision.select()
-        .where(
-            (ArticleRevision.symptom == symptom_id)
-            & (ArticleRevision.status == "approved")
-        )
+        .where((ArticleRevision.symptom == symptom_id) & (ArticleRevision.status == "approved"))
         .order_by(ArticleRevision.published_at.desc())
         .first()
     )

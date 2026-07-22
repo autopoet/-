@@ -51,6 +51,22 @@ export type ContributionOverview = {
   recent: ContributionItem[]
 }
 
+export type FavoriteItem = {
+  symptom_id: number
+  name: string
+  description: string
+  created_at: string
+}
+
+export type FavoriteListResponse = {
+  items: FavoriteItem[]
+  total: number
+}
+
+export type FavoriteState = {
+  favorited: boolean
+}
+
 export type ReviewQueueItem = {
   revision: ArticleRevision
   base_revision: ArticleRevision | null
@@ -67,6 +83,9 @@ export const articleKeys = {
   draft: (symptomId: number) => ['articles', symptomId, 'draft'] as const,
   mine: ['articles', 'mine'] as const,
   overview: ['articles', 'mine', 'overview'] as const,
+  favorites: ['articles', 'favorites'] as const,
+  favorite: (symptomId: number) =>
+    ['articles', symptomId, 'favorite'] as const,
   reviews: ['reviews'] as const,
 }
 
@@ -107,6 +126,26 @@ export function listMyRevisions(signal?: AbortSignal) {
 
 export function getContributionOverview(signal?: AbortSignal) {
   return apiRequest<ContributionOverview>('/articles/mine/overview', { signal })
+}
+
+export function listFavorites(signal?: AbortSignal) {
+  return apiRequest<FavoriteListResponse>('/articles/favorites', { signal })
+}
+
+export function getFavoriteState(symptomId: number, signal?: AbortSignal) {
+  return apiRequest<FavoriteState>(`/articles/${symptomId}/favorite`, { signal })
+}
+
+export function addFavorite(symptomId: number) {
+  return apiRequest<FavoriteState>(`/articles/${symptomId}/favorite`, {
+    method: 'POST',
+  })
+}
+
+export function removeFavorite(symptomId: number) {
+  return apiRequest<FavoriteState>(`/articles/${symptomId}/favorite`, {
+    method: 'DELETE',
+  })
 }
 
 export function listPendingReviews(signal?: AbortSignal) {

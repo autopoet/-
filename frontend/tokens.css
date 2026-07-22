@@ -1,63 +1,70 @@
 :root {
-  --pointer-x: 50%;
-  --pointer-y: 30%;
-
-  color: oklch(22% 0.025 235);
-  background: oklch(98% 0.008 225);
+  color: #25282d;
+  background: #fbfdff;
   font-family:
-    "Inter", "SF Pro Display", "Noto Sans SC", "PingFang SC",
-    "Microsoft YaHei", ui-sans-serif, system-ui, sans-serif;
+    "Noto Sans SC", "PingFang SC", "Microsoft YaHei",
+    ui-sans-serif, system-ui, sans-serif;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  --color-canvas: oklch(98% 0.008 225);
-  --color-canvas-soft: oklch(96% 0.015 225);
-  --color-paper: oklch(99.4% 0.004 225 / 92%);
-  --color-paper-solid: oklch(99.4% 0.004 225);
-  --color-glass: oklch(99% 0.012 225 / 66%);
-  --color-glass-strong: oklch(99% 0.01 225 / 84%);
-  --color-glass-edge: oklch(100% 0 0 / 82%);
-  --color-ink: oklch(22% 0.025 235);
-  --color-ink-2: oklch(31% 0.025 235);
-  --color-text: oklch(40% 0.022 235);
-  --color-muted: oklch(52% 0.018 235);
-  --color-faint: oklch(65% 0.015 235);
-  --color-rule: oklch(87% 0.022 225 / 72%);
-  --color-rule-strong: oklch(74% 0.035 220 / 68%);
-  --color-accent: oklch(49% 0.105 205);
-  --color-accent-hover: oklch(44% 0.11 205);
-  --color-accent-active: oklch(39% 0.1 205);
-  --color-accent-ink: oklch(99% 0.006 220);
-  --color-accent-soft: oklch(91% 0.055 205 / 70%);
-  --color-verified: oklch(55% 0.15 145);
-  --color-verified-soft: oklch(94% 0.045 145 / 78%);
-  --color-spectrum-aqua: oklch(82% 0.11 205 / 54%);
-  --color-spectrum-blue: oklch(80% 0.09 245 / 42%);
-  --color-spectrum-violet: oklch(82% 0.085 305 / 38%);
-  --color-focus: oklch(34% 0.13 215);
-  --color-warning: oklch(55% 0.13 70);
-  --color-warning-soft: oklch(95% 0.04 75 / 86%);
+  /* Source DNA: Valaxy Yun neutral ink, #0078e7 signal blue, pale sky field. */
+  --color-canvas: #fbfdff;
+  --color-canvas-soft: #f3f8fc;
+  --color-paper: #fff;
+  --color-paper-solid: #fff;
+  --color-paper-muted: #f6f9fc;
+  --color-ink: #25282d;
+  --color-ink-2: #343941;
+  --color-text: #505761;
+  --color-muted: #707984;
+  --color-faint: #9ca5ae;
+  --color-rule: rgb(73 91 108 / 14%);
+  --color-rule-strong: rgb(42 56 69 / 36%);
+  --color-track: rgb(0 120 231 / 48%);
+  --color-track-soft: rgb(0 120 231 / 16%);
+  --color-accent: #0078e7;
+  --color-accent-hover: #0068c8;
+  --color-accent-active: #0058a9;
+  --color-accent-ink: #fff;
+  --color-accent-soft: rgb(0 120 231 / 10%);
+  --color-verified: oklch(52% 0.13 148);
+  --color-verified-soft: oklch(95% 0.035 148);
+  --color-warning: oklch(56% 0.13 72);
+  --color-warning-soft: oklch(96% 0.035 75);
   --color-danger: oklch(50% 0.17 28);
-  --color-danger-soft: oklch(95% 0.035 28 / 86%);
-  --color-addition: oklch(94% 0.045 145);
-  --color-addition-ink: oklch(34% 0.09 145);
-  --color-deletion: oklch(94% 0.035 28);
+  --color-danger-soft: oklch(96% 0.032 28);
+  --color-addition: oklch(95% 0.035 148);
+  --color-addition-ink: oklch(35% 0.09 148);
+  --color-deletion: oklch(95% 0.032 28);
   --color-deletion-ink: oklch(39% 0.105 28);
-  --color-code: oklch(17% 0.025 225);
-  --color-code-grid: oklch(58% 0.05 215);
-  --color-code-signal: oklch(76% 0.16 150);
-  --color-code-secondary: oklch(78% 0.12 78);
-  --color-selection: oklch(88% 0.09 205 / 78%);
-  --color-overlay: oklch(18% 0.025 225 / 24%);
+  --color-code: oklch(18% 0.025 250);
+  --color-code-grid: oklch(55% 0.045 240);
+  --color-code-signal: oklch(76% 0.15 152);
+  --color-code-secondary: oklch(79% 0.11 80);
+  --color-selection: rgb(71 202 255 / 24%);
+  --color-overlay: oklch(20% 0.02 250 / 28%);
 
+  /* Background color is atmosphere, never a reading surface. */
+  --color-spectrum-aqua: rgb(90 192 232 / 34%);
+  --color-spectrum-blue: rgb(110 174 232 / 28%);
+  --color-spectrum-sky: rgb(145 207 242 / 24%);
+  --color-spectrum-rose: rgb(235 181 205 / 16%);
+  --color-grid: rgb(83 157 205 / 12%);
+
+  /* Legacy glass names now resolve to opaque editorial paper. */
+  --color-glass: var(--color-paper);
+  --color-glass-strong: var(--color-paper-solid);
+  --color-glass-edge: var(--color-rule);
+
+  --color-focus: #005eae;
   --font-display:
-    "Inter", "SF Pro Display", "Noto Sans SC", "PingFang SC",
-    "Microsoft YaHei", ui-sans-serif, system-ui, sans-serif;
+    "Noto Serif SC", "Source Han Serif SC", "Songti SC", STSong,
+    ui-serif, serif;
   --font-body:
-    "Inter", "SF Pro Text", "Noto Sans SC", "PingFang SC",
-    "Microsoft YaHei", ui-sans-serif, system-ui, sans-serif;
+    "Noto Sans SC", "PingFang SC", "Microsoft YaHei",
+    ui-sans-serif, system-ui, sans-serif;
   --font-outlier:
     "SFMono-Regular", "JetBrains Mono", Consolas, ui-monospace, monospace;
 
@@ -67,12 +74,12 @@
   --text-lg: 1.25rem;
   --text-xl: 1.625rem;
   --text-2xl: clamp(2rem, 4vw, 3.125rem);
-  --text-display: clamp(2.75rem, 7vw, 6.5rem);
+  --text-display: clamp(2.75rem, 7vw, 5.75rem);
 
   --weight-regular: 400;
   --weight-medium: 500;
   --weight-semibold: 600;
-  --weight-bold: 720;
+  --weight-bold: 700;
 
   --space-3xs: 0.25rem;
   --space-2xs: 0.5rem;
@@ -85,55 +92,54 @@
   --space-3xl: 7rem;
   --space-4xl: 11rem;
 
-  --radius-sm: 0.75rem;
-  --radius-md: 1.25rem;
-  --radius-lg: 2rem;
-  --radius-glass: 2.5rem;
+  --radius-sm: 0.375rem;
+  --radius-md: 0.625rem;
+  --radius-lg: 0.875rem;
+  --radius-glass: 1.125rem;
+  --radius-search: 0;
   --radius-xl: var(--radius-glass);
   --radius-pill: 999px;
 
-  --shadow-glass:
-    0 1.5rem 4rem oklch(40% 0.05 225 / 10%),
-    inset 0 1px 0 var(--color-glass-edge);
-  --shadow-glass-strong:
-    0 2rem 5rem oklch(35% 0.07 225 / 16%),
-    inset 0 1px 0 var(--color-glass-edge);
-  --shadow-float: var(--shadow-glass-strong);
-  --focus-ring: 0 0 0 3px oklch(62% 0.11 205 / 24%);
-  --blur-glass: 24px;
-  --blur-panel: 32px;
+  --shadow-paper: 0 0.5rem 1.75rem rgb(30 64 92 / 6%);
+  --shadow-paper-raised: 0 1rem 3rem rgb(30 64 92 / 10%);
+  --shadow-glass: var(--shadow-paper);
+  --shadow-glass-strong: var(--shadow-paper-raised);
+  --shadow-float: var(--shadow-paper-raised);
+  --focus-ring: 0 0 0 3px rgb(0 120 231 / 24%);
+  --blur-glass: 0px;
+  --blur-panel: 0px;
 
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
   --ease-in-out: cubic-bezier(0.65, 1, 0.35, 1);
-  --ease-spring: cubic-bezier(0.34, 1.35, 0.64, 1);
+  --ease-spring: var(--ease-out);
   --dur-micro: 120ms;
-  --dur-short: 240ms;
+  --dur-short: 220ms;
   --dur-medium: 360ms;
   --dur-long: 520ms;
 
   --page-gutter: clamp(1rem, 4vw, 4rem);
-  --content-max: 78rem;
-  --article-max: 47rem;
-  --chrome-top: 5.5rem;
-  --chrome-bottom: 7rem;
+  --content-max: 76rem;
+  --article-max: 48rem;
+  --chrome-top: 4.5rem;
+  --chrome-bottom: 0rem;
   --z-ambient: -1;
   --z-sticky: 20;
   --z-dropdown: 30;
   --z-floating: 35;
   --z-modal: 40;
 
-  /* Compatibility aliases used by existing editing and review styles. */
+  /* Compatibility aliases used by editing and review styles. */
   --font-sans: var(--font-body);
   --font-mono: var(--font-outlier);
   --color-surface: var(--color-paper-solid);
-  --color-surface-subtle: var(--color-canvas-soft);
+  --color-surface-subtle: var(--color-paper-muted);
   --color-neutral: var(--color-text);
   --color-border: var(--color-rule);
   --color-border-strong: var(--color-rule-strong);
   --color-control-border: var(--color-rule-strong);
-  --color-paper-2: var(--color-canvas-soft);
-  --color-paper-3: oklch(92% 0.025 225);
+  --color-paper-2: var(--color-paper-muted);
+  --color-paper-3: oklch(95% 0.012 245);
   --color-rule-2: var(--color-rule-strong);
   --text-caption: var(--text-xs);
   --text-meta: var(--text-sm);
@@ -160,5 +166,5 @@
   --duration-normal: var(--dur-short);
   --rule-hair: 1px;
   --rule-fine: 2px;
-  --header-height: 0px;
+  --header-height: 4.5rem;
 }

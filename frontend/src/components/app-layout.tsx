@@ -26,7 +26,9 @@ export function AppLayout() {
     } else if (location.pathname === '/reviews') {
       document.title = '审核队列｜电赛白皮书'
     } else if (location.pathname === '/profile') {
-      document.title = '我的贡献｜电赛白皮书'
+      document.title = new URLSearchParams(location.search).get('tab') === 'favorites'
+        ? '我的收藏｜电赛白皮书'
+        : '我的贡献｜电赛白皮书'
     } else {
       document.title = '页面未找到｜电赛白皮书'
     }

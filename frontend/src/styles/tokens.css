@@ -1,3 +1,6 @@
-/* Hallmark · macrostructure: multi-page system · tone: technical editorial austere · anchor hue: Signal Green · genre: editorial */
-/* Hallmark · pre-emit critique: P5 H5 E5 S5 R5 V5 · contrast: pass (40–41) · slop: pass (58/58) */
+/* Hallmark · genre: editorial · macrostructure: Identity Scroll / Index-First / Long Document / Workbench
+ * design-system: DESIGN.md · theme: studied-DNA (source: autopoet/my-blog + valaxy-theme-yun)
+ * paper: sky white · signal: #0078e7 · ink: neutral charcoal · display: Chinese screen serif
+ * critique: P5 H5 E5 S5 R5 V5 · contrast: pass (40–41) · slop: pass (42–49) · mobile: pass (34, 49–57)
+ */
 @import "../../tokens.css";

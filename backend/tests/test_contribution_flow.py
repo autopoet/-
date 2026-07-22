@@ -77,6 +77,24 @@ def test_contribution_overview_returns_real_revision_counts() -> None:
     }
 
 
+def test_favorite_flow_returns_real_documents() -> None:
+    with TestClient(app) as client:
+        register(client, "collector")
+
+        initial = client.get("/api/v1/articles/1/favorite")
+        added = client.post("/api/v1/articles/1/favorite")
+        favorites = client.get("/api/v1/articles/favorites")
+        removed = client.delete("/api/v1/articles/1/favorite")
+
+    assert initial.json() == {"favorited": False}
+    assert added.json() == {"favorited": True}
+    assert favorites.status_code == 200
+    assert favorites.json()["total"] == 1
+    assert favorites.json()["items"][0]["symptom_id"] == 1
+    assert favorites.json()["items"][0]["name"] == "无法上电"
+    assert removed.json() == {"favorited": False}
+
+
 def test_register_edit_submit_review_publish_flow() -> None:
     with TestClient(app) as client:
         reviewer = register(client, "owner")

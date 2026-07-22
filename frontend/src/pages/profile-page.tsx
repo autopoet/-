@@ -1,10 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { ArrowUpRight, LogOut, ShieldCheck, UserRound } from 'lucide-react'
-import { useState } from 'react'
-import { Link, Navigate, useNavigate } from 'react-router-dom'
+import {
+  ArrowRight,
+  Bookmark,
+  FilePenLine,
+  LogOut,
+  ShieldCheck,
+} from 'lucide-react'
+import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom'
 import {
   articleKeys,
   getContributionOverview,
+  listFavorites,
   type ContributionItem,
 } from '../api/articles'
 import { authKeys, logout, useCurrentUser } from '../api/auth'
@@ -23,10 +29,17 @@ export default function ProfilePage() {
   const currentUser = useCurrentUser()
   const queryClient = useQueryClient()
   const navigate = useNavigate()
-  const [selectedId, setSelectedId] = useState<number | null>(null)
+  const [searchParams] = useSearchParams()
+  const activeTab =
+    searchParams.get('tab') === 'favorites' ? 'favorites' : 'contributions'
   const overview = useQuery({
     queryKey: articleKeys.overview,
     queryFn: ({ signal }) => getContributionOverview(signal),
+    enabled: Boolean(currentUser.data),
+  })
+  const favorites = useQuery({
+    queryKey: articleKeys.favorites,
+    queryFn: ({ signal }) => listFavorites(signal),
     enabled: Boolean(currentUser.data),
   })
   const logoutMutation = useMutation({
@@ -51,47 +64,17 @@ export default function ProfilePage() {
 
   if (!currentUser.data) return null
 
-  const selected =
-    overview.data?.recent.find((item) => item.id === selectedId) ??
-    overview.data?.recent[0]
   const initial = currentUser.data.username.slice(0, 1).toLocaleUpperCase()
 
   return (
     <main id="main-content" className={styles.page}>
-      <section className={styles.identity} aria-labelledby="profile-title">
+      <header className={styles.identity}>
         <div className={styles.avatar} aria-hidden="true">
-          <span>{initial}</span>
+          {initial}
+          <i />
         </div>
-        <div>
-          <p className={styles.eyebrow}>
-            <UserRound aria-hidden="true" size={16} />
-            {currentUser.data.role === 'reviewer' ? '审核员' : '贡献者'}
-          </p>
-          <h1 id="profile-title">{currentUser.data.username}</h1>
-        </div>
-
-        {overview.data ? (
-          <dl className={styles.counts}>
-            <div>
-              <dt>贡献</dt>
-              <dd>{overview.data.total}</dd>
-            </div>
-            <div>
-              <dt>已发布</dt>
-              <dd>{overview.data.published}</dd>
-            </div>
-            <div>
-              <dt>审核中</dt>
-              <dd>{overview.data.pending}</dd>
-            </div>
-            <div>
-              <dt>草稿 / 修改</dt>
-              <dd>{overview.data.drafts}</dd>
-            </div>
-          </dl>
-        ) : null}
-
-        <div className={styles.accountActions}>
+        <h1>{currentUser.data.username}</h1>
+        <div className={styles.identityActions}>
           {currentUser.data.role === 'reviewer' ? (
             <Link to="/reviews">
               <ShieldCheck aria-hidden="true" size={17} />
@@ -107,73 +90,102 @@ export default function ProfilePage() {
             退出登录
           </button>
         </div>
-      </section>
+      </header>
 
-      <section className={styles.activity} aria-labelledby="activity-title">
-        <header>
-          <h2 id="activity-title">最近贡献</h2>
-        </header>
+      <nav className={styles.tabs} aria-label="个人内容">
+        <Link
+          to="/profile?tab=contributions"
+          aria-current={activeTab === 'contributions' ? 'page' : undefined}
+        >
+          <FilePenLine aria-hidden="true" size={18} />
+          贡献
+          <strong>{overview.data?.total ?? '…'}</strong>
+        </Link>
+        <Link
+          to="/profile?tab=favorites"
+          aria-current={activeTab === 'favorites' ? 'page' : undefined}
+        >
+          <Bookmark aria-hidden="true" size={18} />
+          收藏
+          <strong>{favorites.data?.total ?? '…'}</strong>
+        </Link>
+      </nav>
 
-        {overview.isLoading ? <ListSkeleton rows={4} /> : null}
-        {overview.isError ? (
-          <ErrorState
-            description="个人贡献暂时无法加载。"
-            onRetry={() => void overview.refetch()}
-          />
-        ) : null}
-        {overview.data?.recent.length === 0 ? (
-          <div className={styles.empty}>
-            <p>这里还没有贡献记录。</p>
-            <Link to="/explore">去查 BUG</Link>
-          </div>
-        ) : null}
-        {overview.data?.recent.length ? (
-          <div className={styles.traceLayout}>
-            <ol className={styles.trace}>
+      {activeTab === 'contributions' ? (
+        <section className={styles.content} aria-labelledby="contributions-title">
+          <h2 id="contributions-title" className="sr-only">我的贡献</h2>
+          {overview.isLoading ? <ListSkeleton rows={4} /> : null}
+          {overview.isError ? (
+            <ErrorState
+              description="个人贡献暂时无法加载。"
+              onRetry={() => void overview.refetch()}
+            />
+          ) : null}
+          {overview.data ? (
+            <dl className={styles.summary}>
+              <div><dt>已发布</dt><dd>{overview.data.published}</dd></div>
+              <div><dt>审核中</dt><dd>{overview.data.pending}</dd></div>
+              <div><dt>草稿 / 修改</dt><dd>{overview.data.drafts}</dd></div>
+            </dl>
+          ) : null}
+          {overview.data?.recent.length === 0 ? (
+            <div className={styles.empty}>
+              <p>还没有贡献记录。</p>
+              <Link to="/explore">选择一篇文档开始修改</Link>
+            </div>
+          ) : null}
+          {overview.data?.recent.length ? (
+            <ol className={styles.list}>
               {overview.data.recent.map((item) => (
                 <li key={item.id}>
-                  <button
-                    type="button"
-                    aria-pressed={selected?.id === item.id}
-                    onClick={() => setSelectedId(item.id)}
-                  >
-                    <span className={styles.traceDot} />
-                    <span>
-                      <strong>{item.title}</strong>
-                      <small>
-                        {statusText[item.status]} ·{' '}
-                        {new Date(item.updated_at).toLocaleDateString('zh-CN')}
-                      </small>
-                    </span>
-                  </button>
+                  <Link to={`/articles/${item.symptom_id}`}>
+                    <span>{statusText[item.status]}</span>
+                    <strong>{item.title}</strong>
+                    <time dateTime={item.updated_at}>
+                      {new Date(item.updated_at).toLocaleDateString('zh-CN')}
+                    </time>
+                    <ArrowRight aria-hidden="true" size={19} />
+                  </Link>
                 </li>
               ))}
             </ol>
-
-            {selected ? (
-              <aside className={styles.inspector} aria-live="polite">
-                <span>{statusText[selected.status]}</span>
-                <h3>{selected.title}</h3>
-                <p>{selected.edit_summary || '这次修改没有填写额外说明。'}</p>
-                <dl>
-                  <div>
-                    <dt>版本</dt>
-                    <dd>v{selected.version_number}</dd>
-                  </div>
-                  <div>
-                    <dt>更新</dt>
-                    <dd>{new Date(selected.updated_at).toLocaleString('zh-CN')}</dd>
-                  </div>
-                </dl>
-                <Link to={`/articles/${selected.symptom_id}`}>
-                  查看文档
-                  <ArrowUpRight aria-hidden="true" size={17} />
-                </Link>
-              </aside>
-            ) : null}
-          </div>
-        ) : null}
-      </section>
+          ) : null}
+        </section>
+      ) : (
+        <section className={styles.content} aria-labelledby="favorites-title">
+          <h2 id="favorites-title" className="sr-only">我的收藏</h2>
+          {favorites.isLoading ? <ListSkeleton rows={4} /> : null}
+          {favorites.isError ? (
+            <ErrorState
+              description="收藏暂时无法加载。"
+              onRetry={() => void favorites.refetch()}
+            />
+          ) : null}
+          {favorites.data?.items.length === 0 ? (
+            <div className={styles.empty}>
+              <p>还没有收藏文档。</p>
+              <Link to="/explore">去查 BUG</Link>
+            </div>
+          ) : null}
+          {favorites.data?.items.length ? (
+            <ol className={styles.list}>
+              {favorites.data.items.map((item) => (
+                <li key={item.symptom_id}>
+                  <Link to={`/articles/${item.symptom_id}`}>
+                    <span>
+                      <Bookmark aria-hidden="true" size={15} />
+                      收藏
+                    </span>
+                    <strong>{item.name}</strong>
+                    <span>{item.description}</span>
+                    <ArrowRight aria-hidden="true" size={19} />
+                  </Link>
+                </li>
+              ))}
+            </ol>
+          ) : null}
+        </section>
+      )}
     </main>
   )
 }

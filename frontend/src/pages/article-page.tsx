@@ -1,5 +1,6 @@
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
+  Bookmark,
   ChevronRight,
   MessageSquareText,
   PencilLine,
@@ -21,9 +22,12 @@ import {
   useSearchParams,
 } from 'react-router-dom'
 import {
+  addFavorite,
   articleKeys,
+  getFavoriteState,
   getPublishedArticle,
   listPublishedRevisions,
+  removeFavorite,
 } from '../api/articles'
 import { useCurrentUser } from '../api/auth'
 import { ApiError } from '../api/client'
@@ -232,6 +236,7 @@ export default function ArticlePage() {
   const { articleId = '' } = useParams()
   const numericArticleId = Number(articleId)
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const [searchParams, setSearchParams] = useSearchParams()
   const editRequested = searchParams.get('edit') === '1'
   const submitted = searchParams.get('submitted') === '1'
@@ -288,6 +293,41 @@ export default function ArticlePage() {
     queryFn: ({ signal }) =>
       listPublishedRevisions(numericArticleId, signal),
     enabled: validArticleId && Boolean(publishedQuery.data),
+  })
+  const favoriteQuery = useQuery({
+    queryKey: articleKeys.favorite(numericArticleId),
+    queryFn: ({ signal }) => getFavoriteState(numericArticleId, signal),
+    enabled: validArticleId && Boolean(currentUser.data),
+  })
+  const favoriteMutation = useMutation({
+    mutationFn: (favorited: boolean) =>
+      favorited
+        ? addFavorite(numericArticleId)
+        : removeFavorite(numericArticleId),
+    onMutate: async (favorited) => {
+      await queryClient.cancelQueries({
+        queryKey: articleKeys.favorite(numericArticleId),
+      })
+      const previous = queryClient.getQueryData(
+        articleKeys.favorite(numericArticleId),
+      )
+      queryClient.setQueryData(articleKeys.favorite(numericArticleId), {
+        favorited,
+      })
+      return { previous }
+    },
+    onError: (_error, _favorited, context) => {
+      queryClient.setQueryData(
+        articleKeys.favorite(numericArticleId),
+        context?.previous,
+      )
+    },
+    onSettled: () => {
+      void queryClient.invalidateQueries({
+        queryKey: articleKeys.favorite(numericArticleId),
+      })
+      void queryClient.invalidateQueries({ queryKey: articleKeys.favorites })
+    },
   })
 
   const article = useMemo(
@@ -361,6 +401,16 @@ export default function ArticlePage() {
     next.set('edit', '1')
     next.delete('submitted')
     setSearchParams(next)
+  }
+
+  function toggleFavorite() {
+    if (!currentUser.data) {
+      navigate(
+        `/login?from=${encodeURIComponent(`/articles/${numericArticleId}`)}`,
+      )
+      return
+    }
+    favoriteMutation.mutate(!favoriteQuery.data?.favorited)
   }
 
   function stopEditing() {
@@ -555,6 +605,17 @@ export default function ArticlePage() {
 
           <header className={styles.articleHeader}>
             <div className={styles.headerActions}>
+              <button
+                className={styles.favoriteButton}
+                type="button"
+                aria-pressed={favoriteQuery.data?.favorited ?? false}
+                disabled={currentUser.isPending || favoriteMutation.isPending}
+                data-active={favoriteQuery.data?.favorited ? 'true' : 'false'}
+                onClick={toggleFavorite}
+              >
+                <Bookmark aria-hidden="true" size={17} />
+                {favoriteQuery.data?.favorited ? '已收藏' : '收藏'}
+              </button>
               <button
                 className={styles.editButton}
                 type="button"

@@ -7,10 +7,12 @@ import { ApiError } from '../api/client'
 import styles from './login-page.module.css'
 
 export default function LoginPage() {
-  const [mode, setMode] = useState<'login' | 'register'>('login')
+  const [searchParams] = useSearchParams()
+  const [mode, setMode] = useState<'login' | 'register'>(() =>
+    searchParams.get('mode') === 'register' ? 'register' : 'login',
+  )
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
-  const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const authMutation = useMutation({
@@ -54,11 +56,6 @@ export default function LoginPage() {
 
         <header>
           <h1 id="auth-title">{mode === 'login' ? '欢迎回来' : '建立贡献身份'}</h1>
-          <p>
-            {mode === 'login'
-              ? '继续阅读、修改和审核电赛 Debug 文档。'
-              : '每次修改都会记录你的名字，并在审核后公开。'}
-          </p>
         </header>
 
         <form className={styles.authForm} onSubmit={handleSubmit}>

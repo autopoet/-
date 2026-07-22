@@ -79,6 +79,22 @@ class ContributionOverview(BaseModel):
     recent: list[ContributionItem]
 
 
+class FavoriteItem(BaseModel):
+    symptom_id: int
+    name: str
+    description: str
+    created_at: datetime
+
+
+class FavoriteListResponse(BaseModel):
+    items: list[FavoriteItem]
+    total: int
+
+
+class FavoriteState(BaseModel):
+    favorited: bool
+
+
 class ReviewQueueItem(BaseModel):
     revision: ArticleRevisionItem
     base_revision: ArticleRevisionItem | None

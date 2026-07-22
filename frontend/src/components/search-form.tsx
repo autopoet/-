@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { LoaderCircle, Search, Sparkles, X } from 'lucide-react'
+import { ArrowRight, LoaderCircle, Search, X } from 'lucide-react'
 import {
   type FormEvent,
   type KeyboardEvent,
@@ -189,7 +189,7 @@ export function SearchForm({
           type="submit"
           aria-label="开始搜索"
         >
-          <Sparkles aria-hidden="true" size={19} />
+          <ArrowRight aria-hidden="true" size={19} />
           <span>查找</span>
         </button>
       </div>
@@ -200,14 +200,16 @@ export function SearchForm({
           : ''}
       </span>
 
-      <p
-        id={`${listboxId}-helper`}
-        className={styles.validation}
-        data-error={validationMessage ? 'true' : 'false'}
-        role={validationMessage ? 'alert' : undefined}
-      >
-        {validationMessage || hint || '\u00A0'}
-      </p>
+      {validationMessage || hint ? (
+        <p
+          id={`${listboxId}-helper`}
+          className={styles.validation}
+          data-error={validationMessage ? 'true' : 'false'}
+          role={validationMessage ? 'alert' : undefined}
+        >
+          {validationMessage || hint}
+        </p>
+      ) : null}
 
       {suggestionPanelOpen ? (
         <div className={styles.suggestions} id={listboxId} role="listbox">
