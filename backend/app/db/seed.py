@@ -1,6 +1,8 @@
 import json
 from datetime import datetime
 
+from peewee import fn
+
 from app.core.config import settings
 from app.core.security import hash_password
 from app.db.database import database
@@ -8,26 +10,16 @@ from app.models.article_revision import ArticleRevision
 from app.models.symptom import Symptom
 from app.models.user import User
 
-DEFAULT_SYMPTOMS = (
-    {"name": "无法上电", "description": "设备接通电源后没有任何响应"},
-    {"name": "电压或电流异常", "description": "测量值明显高于或低于设计范围"},
-    {
-        "name": "通信失败或乱码",
-        "description": "串口、I²C、SPI 等通信无法建立或数据错误",
-    },
-)
-
-DEMO_SYMPTOM = {
-    "name": "稳压电源带负载后输出电压骤降",
-    "description": "空载输出正常，接入负载后电压明显下降、反复重启或进入限流保护",
+GUIDE_SYMPTOM = {
+    "name": "本站使用指南",
+    "description": "了解如何查找排障文档、贡献经验、参与审核与评论",
 }
-DEMO_EDIT_SUMMARY = "初始化真实排障示例"
-DEMO_CHECKLIST = [
-    "断开负载，确认稳压电源空载输出是否正常",
-    "测量输入端电压，排除前级电源或导线压降",
-    "逐步增加负载，确认电压开始下降时的实际电流",
-    "检查限流值、散热与输入输出压差是否满足要求",
-    "修复后分别在空载、额定负载和动态负载下复测",
+GUIDE_EDIT_SUMMARY = "初始化本站使用指南"
+GUIDE_CHECKLIST = [
+    "游客可以直接阅读公开文档",
+    "登录后可以收藏、评论和贡献内容",
+    "新建或修改的正文经审核后才会公开",
+    "遇到错误或危险内容时请提醒维护者处理",
 ]
 
 
@@ -43,43 +35,70 @@ def _heading(value: str) -> dict:
     return {"type": "heading", "attrs": {"level": 2}, "content": [_text(value)]}
 
 
-DEMO_BODY = {
+def _list_item(value: str) -> dict:
+    return {"type": "listItem", "content": [_paragraph(value)]}
+
+
+GUIDE_BODY = {
     "type": "doc",
     "content": [
-        _heading("现象与判断边界"),
+        _heading("先从这里开始"),
         _paragraph(
-            "稳压电源空载输出正常，接入负载后电压明显下降，负载可能反复复位。"
-            "先不要直接更换稳压芯片，应确认问题来自输入压降、限流、器件压差还是散热。"
+            "电赛白皮书是一座由参赛者共同维护的公开 Debug 知识库。"
+            "每篇文档都应从可观察的故障现象出发，给出可以执行、测量和复核的排查过程。"
         ),
-        _heading("快速检查"),
+        _heading("查找一篇排障文档"),
+        {
+            "type": "orderedList",
+            "content": [
+                _list_item("描述你看到的现象、器件或错误信息，而不是先猜测故障原因。"),
+                _list_item("进入文档后先核对适用范围、安全提示和所需测量条件。"),
+                _list_item("按快速检查清单和正文顺序记录测量值，不要跳过验证步骤。"),
+                _list_item("问题解决后选择“解决了”；仍有疑问时可对具体文字发起评论。"),
+            ],
+        },
+        _heading("贡献自己的经验"),
         {
             "type": "bulletList",
             "content": [
-                {"type": "listItem", "content": [_paragraph(item)]}
-                for item in (
-                    "同时测量稳压器输入端和输出端，不要只看电源面板读数。",
-                    "逐步增加负载，记录电压开始下降时的电流。",
-                    "检查输入输出电容的容量、ESR、极性和回流路径。",
-                )
+                _list_item("注册并登录后，可以新建条目或在当前文档内直接编辑。"),
+                _list_item("新文章可一键插入标准排障模板，再按实际情况增删章节。"),
+                _list_item("保存草稿不会公开；填写修改说明并提交后才会进入审核队列。"),
+                _list_item("待审核版本可以撤回继续修改，从未提交的草稿可以直接删除。"),
             ],
         },
-        _heading("分步排查"),
-        _paragraph("1. 输入端同步掉压：检查供电能力、连接器、导线和保护器件。"),
-        _paragraph("2. 输入正常但输出下降：对照数据手册核对 dropout、电流限制与结温。"),
         {
             "type": "codeBlock",
             "attrs": {"language": "text"},
-            "content": [_text("P_LDO = (Vin - Vout) × Iload")],
+            "content": [_text("故障现象 → 测量条件 → 排查步骤 → 预期结果 → 根因 → 修复验证")],
         },
-        _paragraph("3. 输出周期性恢复：使用示波器观察输出波形，判断是否进入过流或过温保护。"),
-        _heading("修复验证"),
+        _heading("审核与版本"),
+        _paragraph(
+            "所有新增和修改都要经过审核才会改变公开内容。审核员看到的是人类可读的"
+            "块级差异；通过、驳回、撤回和回滚都会保留修改者、审核者与日期。"
+        ),
         {
             "type": "blockquote",
             "content": [
                 _paragraph(
-                    "修复后至少连续运行十分钟，并在空载、额定负载和负载阶跃三种条件下"
-                    "记录输入电压、输出电压、电流与器件温升。"
+                    "审核通过只表示内容结构和依据达到发布要求，不等于每一种硬件环境都已复现。"
+                    "引用结论前仍应核对器件型号、供电、负载、固件和仪器条件。"
                 )
+            ],
+        },
+        _heading("评论与通知"),
+        _paragraph(
+            "阅读时选中一段文字即可发起划线评论。回复会留在原文上下文中；"
+            "新内容待审核、自己的投稿结果和评论回复会通过站内通知提醒相关用户。"
+        ),
+        _heading("写作约定"),
+        {
+            "type": "bulletList",
+            "content": [
+                _list_item("记录真实测量条件、仪器、数值和预期结果。"),
+                _list_item("区分已经验证的结论、合理推测和仍待确认的问题。"),
+                _list_item("涉及市电、高压、大电流、电池或激光时明确写出安全边界。"),
+                _list_item("尊重原作者与资料许可，引用数据手册或外部资料时注明来源。"),
             ],
         },
     ],
@@ -101,16 +120,18 @@ def _ensure_user(username: str, password: str, role: str) -> User:
     return user
 
 
-def _ensure_demo_symptom() -> Symptom:
-    defaults: dict[str, object] = {"description": DEMO_SYMPTOM["description"]}
-    if "is_published" in Symptom._meta.fields:
-        defaults["is_published"] = True
-    symptom, _ = Symptom.get_or_create(name=DEMO_SYMPTOM["name"], defaults=defaults)
-
+def _ensure_guide_symptom() -> Symptom:
+    symptom, _ = Symptom.get_or_create(
+        name=GUIDE_SYMPTOM["name"],
+        defaults={
+            "description": GUIDE_SYMPTOM["description"],
+            "is_published": True,
+        },
+    )
     changes: dict[str, object] = {}
-    if symptom.description != DEMO_SYMPTOM["description"]:
-        changes["description"] = DEMO_SYMPTOM["description"]
-    if "is_published" in Symptom._meta.fields and not symptom.is_published:
+    if symptom.description != GUIDE_SYMPTOM["description"]:
+        changes["description"] = GUIDE_SYMPTOM["description"]
+    if not symptom.is_published:
         changes["is_published"] = True
     if changes:
         Symptom.update(**changes).where(Symptom.id == symptom.id).execute()
@@ -118,38 +139,45 @@ def _ensure_demo_symptom() -> Symptom:
     return symptom
 
 
-def seed_demo_data(
+def seed_site_guide(
     reviewer_username: str,
     reviewer_password: str,
     contributor_username: str,
     contributor_password: str,
 ) -> ArticleRevision:
-    """幂等创建本地演示用户和一篇已审核发布的真实文章。"""
+    """幂等创建本地演示账号和一篇已发布的本站使用指南。"""
     now = datetime.now()
     with database.atomic():
-        reviewer = _ensure_user(reviewer_username, reviewer_password, "admin")
-        contributor = _ensure_user(contributor_username, contributor_password, "contributor")
-        symptom = _ensure_demo_symptom()
+        seed_reviewer = _ensure_user(reviewer_username, reviewer_password, "admin")
+        _ensure_user(contributor_username, contributor_password, "contributor")
+        admin = User.select().where(User.role == "admin").order_by(User.id).first()
+        guide_owner = admin or seed_reviewer
+        symptom = _ensure_guide_symptom()
         revision = ArticleRevision.get_or_none(
             (ArticleRevision.symptom == symptom)
-            & (ArticleRevision.author == contributor)
-            & (ArticleRevision.edit_summary == DEMO_EDIT_SUMMARY)
+            & (ArticleRevision.edit_summary == GUIDE_EDIT_SUMMARY)
         )
         if revision is None:
+            version_number = (
+                ArticleRevision.select(fn.COALESCE(fn.MAX(ArticleRevision.version_number), 0) + 1)
+                .where(ArticleRevision.symptom == symptom)
+                .scalar()
+            )
             revision = ArticleRevision.create(
                 symptom=symptom,
-                author=contributor,
-                reviewer=reviewer,
-                version_number=1,
+                author=guide_owner,
+                reviewer=guide_owner,
+                version_number=version_number,
                 status="approved",
-                title="稳压电源空载正常，带负载后输出电压骤降",
-                summary=DEMO_SYMPTOM["description"],
-                applicability="适用于低压直流供电中的 LDO、降压模块和实验电源。",
-                safety="改线、测量电阻或重新焊接前必须断电；测量时避免探头造成输出短路。",
-                checklist_json=json.dumps(DEMO_CHECKLIST, ensure_ascii=False),
-                body=json.dumps(DEMO_BODY, ensure_ascii=False),
-                edit_summary=DEMO_EDIT_SUMMARY,
-                review_note="排查顺序明确，测量条件和修复验证完整。",
+                origin="official_seed",
+                title=GUIDE_SYMPTOM["name"],
+                summary=GUIDE_SYMPTOM["description"],
+                applicability="适用于第一次访问本站的读者、贡献者和审核员。",
+                safety="",
+                checklist_json=json.dumps(GUIDE_CHECKLIST, ensure_ascii=False),
+                body=json.dumps(GUIDE_BODY, ensure_ascii=False),
+                edit_summary=GUIDE_EDIT_SUMMARY,
+                review_note="本站默认功能示例文档。",
                 submitted_at=now,
                 reviewed_at=now,
                 published_at=now,
@@ -162,7 +190,7 @@ def main() -> None:
 
     bootstrap_database()
     with database.connection_context():
-        revision = seed_demo_data(
+        revision = seed_site_guide(
             reviewer_username=settings.seed_reviewer_username,
             reviewer_password=settings.seed_reviewer_password,
             contributor_username=settings.seed_contributor_username,
@@ -170,7 +198,8 @@ def main() -> None:
         )
     print(
         f"Seed 完成：文章 #{revision.symptom_id}《{revision.title}》；"
-        f"审核员 {settings.seed_reviewer_username}；贡献者 {settings.seed_contributor_username}"
+        f"审核账号 {settings.seed_reviewer_username}；"
+        f"贡献者 {settings.seed_contributor_username}"
     )
 
 

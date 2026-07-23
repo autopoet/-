@@ -485,7 +485,7 @@
   .listPage,
   .editorPage {
     width: calc(100% - var(--space-6));
-    padding-block: var(--space-8) var(--space-16);
+    padding-block: 5.5rem var(--space-16);
   }
 
   .editorHeader,
@@ -494,6 +494,11 @@
   .reviewItem header {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .pageTitle h1,
+  .editorHeader h1 {
+    font-size: clamp(1.875rem, 10vw, 2.4rem);
   }
 
   .formActions {

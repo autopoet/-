@@ -152,14 +152,14 @@
 .orbitArc {
   position: absolute;
   inset: 50% auto auto 50%;
-  width: 8.75rem;
-  height: 8.75rem;
+  width: 11.5rem;
+  height: 11.5rem;
   border: 1px solid var(--color-track-soft);
   border-left-color: transparent;
   border-bottom-color: transparent;
   border-radius: 50%;
   opacity: 0;
-  transform: translate(-50%, -50%) rotate(24deg) scale(0.62);
+  transform: translate(-50%, -50%) rotate(22deg) scale(0.62);
   transition:
     opacity var(--dur-short) var(--ease-out),
     transform var(--dur-medium) var(--ease-out);
@@ -193,7 +193,7 @@
 
 .floatingNav[data-open="true"] .orbitArc {
   opacity: 1;
-  transform: translate(-50%, -50%) rotate(24deg) scale(1);
+  transform: translate(-50%, -50%) rotate(22deg) scale(1);
 }
 
 .floatingNav[data-open="true"] .satellite {
@@ -202,15 +202,15 @@
 }
 
 .floatingNav[data-open="true"] .satellite0 {
-  transform: translate(-50%, -50%) translateY(-4.3rem);
+  transform: translate(-50%, -50%) translate(3.55rem, -4.75rem);
 }
 
 .floatingNav[data-open="true"] .satellite1 {
-  transform: translate(-50%, -50%) translate(3.15rem, -3.05rem);
+  transform: translate(-50%, -50%) translate(5.65rem, -1.65rem);
 }
 
 .floatingNav[data-open="true"] .satellite2 {
-  transform: translate(-50%, -50%) translateX(4.4rem);
+  transform: translate(-50%, -50%) translate(5.75rem, 2.15rem);
 }
 
 .floatingNav[data-open="true"] .coreBall::before {
@@ -259,6 +259,11 @@
     width: 13rem;
     height: 10.5rem;
     transform: translateX(-50%);
+  }
+
+  .orbitArc {
+    width: 9rem;
+    height: 9rem;
   }
 
   .floatingNav[data-open="true"] .satellite0 {

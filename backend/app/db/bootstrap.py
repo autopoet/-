@@ -9,7 +9,6 @@ from app.db.migrate_governance import (
 )
 from app.db.migrate_revision_metadata import migrate_revision_metadata
 from app.db.migrate_symptom_visibility import migrate_symptom_visibility
-from app.db.seed import DEFAULT_SYMPTOMS
 from app.models.article_revision import ArticleRevision
 from app.models.comment import Comment, CommentThread
 from app.models.favorite import Favorite
@@ -40,7 +39,6 @@ def bootstrap_database() -> None:
             [ReviewerApplication, AuditLog, ArticleFeedback, Notification],
             safe=True,
         )
-        (Symptom.insert_many(DEFAULT_SYMPTOMS).on_conflict_ignore().execute())
 
 
 if __name__ == "__main__":

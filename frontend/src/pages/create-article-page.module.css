@@ -1,7 +1,7 @@
 /* Hallmark · macrostructure: focused authoring sheet · tone: technical editorial · anchor: signal blue */
 .page,
 .statePage {
-  width: min(100% - var(--space-8), 58rem);
+  width: min(100% - var(--space-8), 52rem);
   min-height: 100svh;
   padding-block: var(--space-12) var(--space-24);
   margin-inline: auto;
@@ -54,8 +54,8 @@
 .form {
   display: flex;
   flex-direction: column;
-  gap: var(--space-8);
-  padding-top: clamp(3rem, 8vw, 7rem);
+  gap: var(--space-6);
+  padding-top: clamp(2.5rem, 6vw, 4.5rem);
 }
 
 .eyebrow {
@@ -67,13 +67,13 @@
 }
 
 .form h1 {
-  max-width: 12ch;
-  margin: calc(var(--space-5) * -1) 0 var(--space-4);
+  max-width: 15ch;
+  margin: calc(var(--space-4) * -1) 0 var(--space-3);
   font-family: var(--font-display);
-  font-size: clamp(2.5rem, 7vw, 5rem);
+  font-size: clamp(2rem, 4vw, 3.25rem);
   font-weight: var(--weight-semibold);
-  letter-spacing: -0.055em;
-  line-height: 1.08;
+  letter-spacing: -0.04em;
+  line-height: 1.15;
 }
 
 .form label {
@@ -103,7 +103,7 @@
 
 .titleField input {
   font-family: var(--font-display);
-  font-size: clamp(1.6rem, 4vw, 2.7rem);
+  font-size: clamp(1.25rem, 2.2vw, 1.75rem);
   letter-spacing: -0.025em;
 }
 
@@ -175,13 +175,22 @@
   .page,
   .statePage {
     width: calc(100% - var(--space-6));
-    padding-block: var(--space-8) var(--space-16);
+    padding-block: 5.5rem var(--space-16);
   }
 
   .header,
   .form footer {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .form {
+    gap: var(--space-5);
+    padding-top: var(--space-8);
+  }
+
+  .form h1 {
+    font-size: clamp(1.875rem, 10vw, 2.4rem);
   }
 
   .form button {
