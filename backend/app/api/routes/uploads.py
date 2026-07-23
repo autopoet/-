@@ -1,4 +1,3 @@
-from pathlib import Path
 from secrets import token_urlsafe
 from typing import Annotated
 
@@ -9,6 +8,7 @@ from app.core.config import settings
 from app.db.database import database_connection
 from app.models.user import User
 from app.schemas.upload import ImageUploadItem
+from app.services.image_storage import ImageStorageError, save_image
 
 router = APIRouter(
     prefix="/uploads",
@@ -51,10 +51,14 @@ async def upload_image(
         )
 
     extension, media_type = detected
-    directory = Path(settings.upload_dir)
-    directory.mkdir(parents=True, exist_ok=True)
     filename = f"{token_urlsafe(18)}.{extension}"
-    (directory / filename).write_bytes(data)
+    try:
+        await save_image(filename, data, media_type)
+    except ImageStorageError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=str(exc),
+        ) from exc
     return ImageUploadItem(
         url=f"/uploads/{filename}",
         media_type=media_type,

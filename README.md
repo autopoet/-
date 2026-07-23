@@ -13,6 +13,7 @@
 - [界面设计系统](./DESIGN.md)
 - [A+D 页面升级提示词](./UI_UPGRADE_PROMPT.md)
 - [技术架构设计](./docs/ARCHITECTURE.md)
+- [Render + Supabase 预览部署与迁移手册](./docs/DEPLOYMENT.md)
 
 当前已经包含：
 
@@ -64,7 +65,7 @@ python -m app.db.seed
 python -m uvicorn app.main:app --reload
 ```
 
-`seed` 会先完成建表，再幂等创建本地演示审核员、贡献者和一篇已发布的《本站使用指南》。项目不再预置虚构故障内容；只需要建表时可改用 `python -m app.db.bootstrap`。演示账号由 `backend/.env` 中的 `APP_SEED_*` 配置。上传图片保存在 `APP_UPLOAD_DIR` 指定的本地目录，生产环境应替换为持久化文件或对象存储。
+`seed` 会先完成建表，再幂等创建本地演示审核员、贡献者和一篇已发布的《本站使用指南》。项目不再预置虚构故障内容；只需要建表时可改用 `python -m app.db.bootstrap`。演示账号由 `backend/.env` 中的 `APP_SEED_*` 配置。本地图片保存在 `APP_UPLOAD_DIR`，预览环境改用 Supabase Storage。
 
 后端地址：
 

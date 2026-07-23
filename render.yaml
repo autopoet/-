@@ -1,0 +1,36 @@
+services:
+  - type: web
+    name: diansai-debug-handbook
+    runtime: docker
+    plan: free
+    region: singapore
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/v1/health
+    autoDeployTrigger: commit
+    envVars:
+      - key: APP_ENVIRONMENT
+        value: production
+      - key: APP_FRONTEND_ORIGIN
+        value: https://diansai-debug-handbook.onrender.com
+      - key: APP_SECURE_COOKIES
+        value: "true"
+      - key: APP_STORAGE_BACKEND
+        value: supabase
+      - key: APP_SUPABASE_STORAGE_BUCKET
+        value: article-images
+      - key: APP_MAINTENANCE_READ_ONLY
+        value: "false"
+      - key: APP_DATABASE_URL
+        sync: false
+      - key: APP_SUPABASE_URL
+        sync: false
+      - key: APP_SUPABASE_SECRET_KEY
+        sync: false
+      - key: APP_SEED_REVIEWER_USERNAME
+        sync: false
+      - key: APP_SEED_REVIEWER_PASSWORD
+        sync: false
+      - key: APP_SEED_CONTRIBUTOR_USERNAME
+        sync: false
+      - key: APP_SEED_CONTRIBUTOR_PASSWORD
+        sync: false

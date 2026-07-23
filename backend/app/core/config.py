@@ -1,4 +1,5 @@
 from functools import lru_cache
+from typing import Literal
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -12,8 +13,14 @@ class Settings(BaseSettings):
     session_cookie_name: str = "diansai_session"
     session_days: int = 7
     secure_cookies: bool = False
+    frontend_dist: str = ""
+    maintenance_read_only: bool = False
     upload_dir: str = "data/uploads"
     max_image_bytes: int = 10 * 1024 * 1024
+    storage_backend: Literal["local", "supabase"] = "local"
+    supabase_url: str = ""
+    supabase_secret_key: str = ""
+    supabase_storage_bucket: str = "article-images"
     seed_reviewer_username: str = "demo_reviewer"
     seed_reviewer_password: str = "reviewer-local-123"
     seed_contributor_username: str = "demo_contributor"
