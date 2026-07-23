@@ -19,7 +19,7 @@ import styles from './spatial-chrome.module.css'
 
 const navigation = [
   { to: '/', label: '首页', icon: Home, end: true },
-  { to: '/explore', label: '查 BUG', icon: Search, end: false },
+  { to: '/explore', label: '文档', icon: Search, end: false },
   { to: '/submissions', label: '贡献', icon: FilePenLine, end: false },
   { to: '/profile', label: '我的', icon: UserRound, end: false },
 ]
@@ -89,7 +89,7 @@ export function SpatialChrome() {
               ref={inputRef}
               id="global-search"
               value={query}
-              placeholder="例如：无法上电"
+              placeholder="描述现象、器件或错误信息"
               maxLength={20}
               onChange={(event) => setQuery(event.target.value)}
               onKeyDown={handleSearchKeyDown}

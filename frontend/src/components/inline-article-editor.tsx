@@ -29,7 +29,6 @@ import { ApiError } from '../api/client'
 import { useCurrentUser } from '../api/auth'
 import { notificationKeys } from '../api/notifications'
 import { uploadImage } from '../api/uploads'
-import { demoArticles } from '../content/demo-articles'
 import {
   insertTroubleshootingTemplate,
   missingDraftSections,
@@ -51,31 +50,6 @@ const emptyDraft: ArticleDraft = {
   checklist: [''],
   body: '',
   edit_summary: '',
-}
-
-function demoDraft(name: string, description: string): ArticleDraft {
-  const demo = demoArticles[name]
-  const sections = demo?.sections ?? []
-  return {
-    title: name,
-    summary: description,
-    applicability: demo?.applicability ?? '',
-    safety: demo?.safety ?? '',
-    checklist: demo?.checklist ?? [''],
-    body: sections
-      .map((section) =>
-        [
-          `## ${section.title}`,
-          ...(section.paragraphs ?? []),
-          ...(section.list ?? []).map((item) => `- ${item}`),
-          section.note ? `提示：${section.note}` : '',
-        ]
-          .filter(Boolean)
-          .join('\n\n'),
-      )
-      .join('\n\n'),
-    edit_summary: '',
-  }
 }
 
 export function InlineArticleEditor({
@@ -179,18 +153,15 @@ export function InlineArticleEditor({
 
   useEffect(() => {
     if (initialized || draftQuery.isPending || draftFailed) return
-    const source =
-      draftQuery.data ??
-      publishedRevision ??
-      demoDraft(symptomName, symptomDescription)
+    const source = draftQuery.data ?? publishedRevision
     setDraft({
-      title: source.title,
-      summary: source.summary,
-      applicability: source.applicability,
-      safety: source.safety,
-      checklist: source.checklist.length ? source.checklist : [''],
-      body: source.body,
-      edit_summary: source.edit_summary ?? '',
+      title: source?.title ?? symptomName,
+      summary: source?.summary ?? symptomDescription,
+      applicability: source?.applicability ?? '',
+      safety: source?.safety ?? '',
+      checklist: source?.checklist.length ? source.checklist : [''],
+      body: source?.body ?? '',
+      edit_summary: source?.edit_summary ?? '',
     })
     setInitialized(true)
   }, [

@@ -1,6 +1,6 @@
 .signal {
   position: absolute;
-  inset: calc(50% - 2.9rem) auto auto calc(50% + 2.4rem);
+  inset: calc(50% + 2.35rem) auto auto calc(50% - 3.55rem);
   z-index: 5;
   width: 2.25rem;
   height: 2.25rem;
