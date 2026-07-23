@@ -1,4 +1,5 @@
 import { apiRequest } from './client'
+import type { Symptom } from './symptoms'
 
 export type ArticleDraft = {
   title: string
@@ -77,6 +78,16 @@ export type ReviewQueueResponse = {
   total: number
 }
 
+export type NewArticlePayload = {
+  name: string
+  description: string
+}
+
+export type NewArticleResponse = {
+  symptom: Symptom
+  draft: ArticleRevision
+}
+
 export const articleKeys = {
   published: (symptomId: number) => ['articles', symptomId, 'published'] as const,
   versions: (symptomId: number) => ['articles', symptomId, 'versions'] as const,
@@ -87,6 +98,13 @@ export const articleKeys = {
   favorite: (symptomId: number) =>
     ['articles', symptomId, 'favorite'] as const,
   reviews: ['reviews'] as const,
+}
+
+export function createArticle(payload: NewArticlePayload) {
+  return apiRequest<NewArticleResponse>('/articles', {
+    method: 'POST',
+    body: payload,
+  })
 }
 
 export function getPublishedArticle(symptomId: number, signal?: AbortSignal) {

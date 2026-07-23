@@ -33,12 +33,18 @@ export default function SubmissionsPage() {
   return (
     <main id="main-content" className={styles.listPage}>
       <header className={styles.pageTitle}>
-        <h1>我的提交</h1>
-        <p>草稿、待审核与已发布版本。</p>
+        <div className={styles.titleLine}>
+          <h1>我的提交</h1>
+          <Link className={styles.primaryLink} to="/articles/new">
+            新建条目
+          </Link>
+        </div>
       </header>
       {revisions.isLoading ? <ListSkeleton rows={4} /> : null}
       {revisions.isError ? <ErrorState description="提交记录加载失败。" /> : null}
-      {revisions.data?.total === 0 ? <p className={styles.emptyText}>还没有提交记录。</p> : null}
+      {revisions.data?.total === 0 ? (
+        <p className={styles.emptyText}>还没有提交记录，可以从一个具体故障现象开始。</p>
+      ) : null}
       <ul className={styles.workflowList}>
         {revisions.data?.items.map((revision) => (
           <li key={revision.id}>

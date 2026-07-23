@@ -2,6 +2,8 @@ from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
+from app.schemas.symptom import SymptomItem
+
 
 class ArticleDraftPayload(BaseModel):
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -23,6 +25,13 @@ class ArticleDraftPayload(BaseModel):
         if any(len(item) > 200 for item in normalized):
             raise ValueError("单条检查项不能超过 200 个字符")
         return normalized
+
+
+class ArticleCreatePayload(BaseModel):
+    model_config = ConfigDict(str_strip_whitespace=True)
+
+    name: str = Field(min_length=2, max_length=100)
+    description: str = Field(min_length=5, max_length=1000)
 
 
 class ReviewDecision(BaseModel):
@@ -54,6 +63,11 @@ class ArticleRevisionItem(BaseModel):
     submitted_at: datetime | None
     reviewed_at: datetime | None
     published_at: datetime | None
+
+
+class ArticleDraftCreated(BaseModel):
+    symptom: SymptomItem
+    draft: ArticleRevisionItem
 
 
 class RevisionListResponse(BaseModel):

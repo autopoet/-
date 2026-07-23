@@ -3,15 +3,17 @@ from datetime import datetime
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from peewee import fn
+from peewee import IntegrityError, fn
 
 from app.api.dependencies import get_current_user
-from app.db.database import database_connection
+from app.db.database import database, database_connection
 from app.models.article_revision import ArticleRevision
 from app.models.favorite import Favorite
 from app.models.symptom import Symptom
 from app.models.user import User
 from app.schemas.article import (
+    ArticleCreatePayload,
+    ArticleDraftCreated,
     ArticleDraftPayload,
     ArticleRevisionItem,
     ContributionItem,
@@ -21,11 +23,27 @@ from app.schemas.article import (
     FavoriteState,
     RevisionListResponse,
 )
+from app.schemas.symptom import SymptomItem
 
 router = APIRouter(
     prefix="/articles",
     dependencies=[Depends(database_connection)],
 )
+
+
+def draft_values(payload: ArticleDraftPayload) -> dict:
+    return {
+        "title": payload.title,
+        "summary": payload.summary,
+        "applicability": payload.applicability,
+        "safety": payload.safety,
+        "checklist_json": json.dumps(payload.checklist, ensure_ascii=False),
+        "body": payload.body,
+        "edit_summary": payload.edit_summary,
+        "status": "draft",
+        "review_note": "",
+        "updated_at": datetime.now(),
+    }
 
 
 def serialize_revision(revision: ArticleRevision) -> ArticleRevisionItem:
@@ -63,6 +81,73 @@ def get_symptom_or_404(symptom_id: int) -> Symptom:
             detail="故障现象不存在",
         )
     return symptom
+
+
+def get_public_symptom_or_404(symptom_id: int) -> Symptom:
+    symptom = Symptom.get_or_none((Symptom.id == symptom_id) & Symptom.is_published)
+    if symptom is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="故障现象不存在",
+        )
+    return symptom
+
+
+def ensure_can_edit_symptom(symptom: Symptom, current_user: User) -> None:
+    if symptom.is_published:
+        return
+
+    original_author_id = (
+        ArticleRevision.select(ArticleRevision.author_id)
+        .where(ArticleRevision.symptom == symptom)
+        .order_by(
+            ArticleRevision.version_number,
+            ArticleRevision.created_at,
+            ArticleRevision.id,
+        )
+        .scalar()
+    )
+    if original_author_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="故障现象不存在",
+        )
+
+
+@router.post("", response_model=ArticleDraftCreated, status_code=status.HTTP_201_CREATED)
+def create_article_draft(
+    payload: ArticleCreatePayload,
+    current_user: Annotated[User, Depends(get_current_user)],
+) -> ArticleDraftCreated:
+    try:
+        with database.atomic():
+            symptom = Symptom.create(
+                name=payload.name,
+                description=payload.description,
+                is_published=False,
+            )
+            revision = ArticleRevision.create(
+                symptom=symptom,
+                author=current_user,
+                version_number=1,
+                title=payload.name,
+                summary=payload.description,
+                applicability="待补充适用范围",
+                checklist_json=json.dumps(["待补充检查步骤"], ensure_ascii=False),
+                body=json.dumps({"type": "doc", "content": []}, ensure_ascii=False),
+                edit_summary="",
+            )
+    except IntegrityError as error:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="故障现象名称已存在",
+        ) from error
+
+    revision.author = current_user
+    return ArticleDraftCreated(
+        symptom=SymptomItem.model_validate(symptom),
+        draft=serialize_revision(revision),
+    )
 
 
 @router.get("/mine", response_model=RevisionListResponse)
@@ -137,7 +222,7 @@ def get_favorite_state(
     symptom_id: int,
     current_user: Annotated[User, Depends(get_current_user)],
 ) -> FavoriteState:
-    get_symptom_or_404(symptom_id)
+    get_public_symptom_or_404(symptom_id)
     return FavoriteState(
         favorited=Favorite.select()
         .where((Favorite.user == current_user) & (Favorite.symptom == symptom_id))
@@ -150,7 +235,7 @@ def add_favorite(
     symptom_id: int,
     current_user: Annotated[User, Depends(get_current_user)],
 ) -> FavoriteState:
-    symptom = get_symptom_or_404(symptom_id)
+    symptom = get_public_symptom_or_404(symptom_id)
     Favorite.get_or_create(user=current_user, symptom=symptom)
     return FavoriteState(favorited=True)
 
@@ -160,7 +245,7 @@ def remove_favorite(
     symptom_id: int,
     current_user: Annotated[User, Depends(get_current_user)],
 ) -> FavoriteState:
-    get_symptom_or_404(symptom_id)
+    get_public_symptom_or_404(symptom_id)
     (
         Favorite.delete()
         .where((Favorite.user == current_user) & (Favorite.symptom == symptom_id))
@@ -171,7 +256,7 @@ def remove_favorite(
 
 @router.get("/{symptom_id}", response_model=ArticleRevisionItem)
 def get_published_article(symptom_id: int) -> ArticleRevisionItem:
-    get_symptom_or_404(symptom_id)
+    get_public_symptom_or_404(symptom_id)
     revision = (
         ArticleRevision.select(ArticleRevision, User)
         .join(User, on=(ArticleRevision.author == User.id))
@@ -189,7 +274,7 @@ def get_published_article(symptom_id: int) -> ArticleRevisionItem:
 
 @router.get("/{symptom_id}/revisions", response_model=RevisionListResponse)
 def list_published_revisions(symptom_id: int) -> RevisionListResponse:
-    get_symptom_or_404(symptom_id)
+    get_public_symptom_or_404(symptom_id)
     revisions = (
         ArticleRevision.select(ArticleRevision, User)
         .join(User, on=(ArticleRevision.author == User.id))
@@ -208,14 +293,15 @@ def get_draft(
     symptom_id: int,
     current_user: Annotated[User, Depends(get_current_user)],
 ) -> ArticleRevisionItem:
-    get_symptom_or_404(symptom_id)
+    symptom = get_symptom_or_404(symptom_id)
+    ensure_can_edit_symptom(symptom, current_user)
     revision = (
         ArticleRevision.select(ArticleRevision, User)
         .join(User, on=(ArticleRevision.author == User.id))
         .where(
             (ArticleRevision.symptom == symptom_id)
             & (ArticleRevision.author == current_user)
-            & (ArticleRevision.status.in_(("draft", "rejected")))
+            & (ArticleRevision.status.in_(("draft", "rejected", "pending")))
         )
         .order_by(ArticleRevision.updated_at.desc())
         .first()
@@ -235,6 +321,7 @@ def save_draft(
     current_user: Annotated[User, Depends(get_current_user)],
 ) -> ArticleRevisionItem:
     symptom = get_symptom_or_404(symptom_id)
+    ensure_can_edit_symptom(symptom, current_user)
     revision = (
         ArticleRevision.select()
         .where(
@@ -245,19 +332,21 @@ def save_draft(
         .order_by(ArticleRevision.updated_at.desc())
         .first()
     )
-    values = {
-        "title": payload.title,
-        "summary": payload.summary,
-        "applicability": payload.applicability,
-        "safety": payload.safety,
-        "checklist_json": json.dumps(payload.checklist, ensure_ascii=False),
-        "body": payload.body,
-        "edit_summary": payload.edit_summary,
-        "status": "draft",
-        "review_note": "",
-        "updated_at": datetime.now(),
-    }
+    values = draft_values(payload)
     if revision is None:
+        if (
+            ArticleRevision.select()
+            .where(
+                (ArticleRevision.symptom == symptom)
+                & (ArticleRevision.author == current_user)
+                & (ArticleRevision.status == "pending")
+            )
+            .exists()
+        ):
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="当前修改正在审核，请等待审核结果",
+            )
         base_revision = (
             ArticleRevision.select()
             .where((ArticleRevision.symptom == symptom) & (ArticleRevision.status == "approved"))
@@ -289,6 +378,8 @@ def submit_draft(
     symptom_id: int,
     current_user: Annotated[User, Depends(get_current_user)],
 ) -> ArticleRevisionItem:
+    symptom = get_symptom_or_404(symptom_id)
+    ensure_can_edit_symptom(symptom, current_user)
     revision = (
         ArticleRevision.select(ArticleRevision, User)
         .join(User, on=(ArticleRevision.author == User.id))
