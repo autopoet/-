@@ -42,14 +42,22 @@ export async function apiRequest<T>(
     body?: unknown
   } = {},
 ): Promise<T> {
+  const isFormData = options.body instanceof FormData
+  const requestBody: BodyInit | undefined = options.body instanceof FormData
+    ? options.body
+    : options.body === undefined
+      ? undefined
+      : JSON.stringify(options.body)
   const response = await fetch(`${API_BASE_URL}${path}`, {
     signal: options.signal,
     method: options.method ?? 'GET',
-    body: options.body === undefined ? undefined : JSON.stringify(options.body),
+    body: requestBody,
     credentials: 'include',
     headers: {
       Accept: 'application/json',
-      ...(options.body === undefined ? {} : { 'Content-Type': 'application/json' }),
+      ...(options.body === undefined || isFormData
+        ? {}
+        : { 'Content-Type': 'application/json' }),
     },
   })
 

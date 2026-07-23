@@ -5,8 +5,10 @@ from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.api.dependencies import get_reviewer
 from app.api.routes.articles import serialize_revision
+from app.api.routes.comments import relocate_comment_threads
 from app.db.database import database, database_connection
 from app.models.article_revision import ArticleRevision
+from app.models.symptom import Symptom
 from app.models.user import User
 from app.schemas.article import (
     ArticleRevisionItem,
@@ -25,10 +27,7 @@ def get_pending_revision(revision_id: int) -> ArticleRevision:
     revision = (
         ArticleRevision.select(ArticleRevision, User)
         .join(User, on=(ArticleRevision.author == User.id))
-        .where(
-            (ArticleRevision.id == revision_id)
-            & (ArticleRevision.status == "pending")
-        )
+        .where((ArticleRevision.id == revision_id) & (ArticleRevision.status == "pending"))
         .first()
     )
     if revision is None:
@@ -50,9 +49,7 @@ def serialize_review_item(revision: ArticleRevision) -> ReviewQueueItem:
     )
     return ReviewQueueItem(
         revision=serialize_revision(revision),
-        base_revision=(
-            serialize_revision(base_revision) if base_revision else None
-        ),
+        base_revision=(serialize_revision(base_revision) if base_revision else None),
     )
 
 
@@ -99,6 +96,8 @@ def approve_revision(
         revision.published_at = now
         revision.updated_at = now
         revision.save()
+        Symptom.update(is_published=True).where(Symptom.id == revision.symptom_id).execute()
+        relocate_comment_threads(revision.symptom_id, revision)
     return serialize_revision(revision)
 
 

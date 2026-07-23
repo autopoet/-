@@ -1,33 +1,16 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from peewee import IntegrityError, fn
+from peewee import fn
 
+from app.api.dependencies import get_optional_current_user
 from app.db.database import database_connection
+from app.models.article_revision import ArticleRevision
 from app.models.symptom import Symptom
-from app.schemas.symptom import SymptomCreate, SymptomItem, SymptomListResponse
+from app.models.user import User
+from app.schemas.symptom import SymptomItem, SymptomListResponse
 
 router = APIRouter(dependencies=[Depends(database_connection)])
-
-
-@router.post(
-    "/symptoms",
-    response_model=SymptomItem,
-    status_code=status.HTTP_201_CREATED,
-)
-def create_symptom(payload: SymptomCreate) -> SymptomItem:
-    try:
-        symptom = Symptom.create(
-            name=payload.name,
-            description=payload.description,
-        )
-    except IntegrityError as error:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="故障现象名称已存在",
-        ) from error
-
-    return SymptomItem.model_validate(symptom)
 
 
 @router.get("/symptoms", response_model=SymptomListResponse)
@@ -41,7 +24,7 @@ def list_symptoms(
         ),
     ] = None,
 ) -> SymptomListResponse:
-    query = Symptom.select().order_by(Symptom.id)
+    query = Symptom.select().where(Symptom.is_published).order_by(Symptom.id)
 
     if keyword is not None:
         normalized_keyword = keyword.casefold()
@@ -59,10 +42,19 @@ def list_symptoms(
 
 
 @router.get("/symptoms/{symptom_id}", response_model=SymptomItem)
-def get_symptom(symptom_id: int) -> SymptomItem:
+def get_symptom(
+    symptom_id: int,
+    current_user: Annotated[User | None, Depends(get_optional_current_user)],
+) -> SymptomItem:
     symptom = Symptom.get_or_none(Symptom.id == symptom_id)
 
-    if symptom is None:
+    can_view_unpublished = current_user is not None and (
+        current_user.role == "reviewer"
+        or ArticleRevision.select()
+        .where((ArticleRevision.symptom == symptom_id) & (ArticleRevision.author == current_user))
+        .exists()
+    )
+    if symptom is None or (not symptom.is_published and not can_view_unpublished):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="故障现象不存在",

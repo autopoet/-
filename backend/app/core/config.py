@@ -12,6 +12,12 @@ class Settings(BaseSettings):
     session_cookie_name: str = "diansai_session"
     session_days: int = 7
     secure_cookies: bool = False
+    upload_dir: str = "data/uploads"
+    max_image_bytes: int = 10 * 1024 * 1024
+    seed_reviewer_username: str = "demo_reviewer"
+    seed_reviewer_password: str = "reviewer-local-123"
+    seed_contributor_username: str = "demo_contributor"
+    seed_contributor_password: str = "contributor-local-123"
 
     model_config = SettingsConfigDict(
         env_file=".env",

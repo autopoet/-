@@ -3,6 +3,7 @@ from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from app.api.router import api_router
 from app.core.config import settings
@@ -13,6 +14,7 @@ async def lifespan(_: FastAPI):
     if settings.database_url.startswith("sqlite"):
         Path("data").mkdir(exist_ok=True)
 
+    Path(settings.upload_dir).mkdir(parents=True, exist_ok=True)
     yield
 
 
@@ -31,3 +33,8 @@ app.add_middleware(
 )
 
 app.include_router(api_router, prefix=settings.api_v1_prefix)
+app.mount(
+    "/uploads",
+    StaticFiles(directory=settings.upload_dir, check_dir=False),
+    name="uploads",
+)

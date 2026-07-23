@@ -1,6 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Plus, Trash2, X } from 'lucide-react'
-import { type FormEvent, useEffect, useState } from 'react'
+import {
+  type FormEvent,
+  lazy,
+  Suspense,
+  useEffect,
+  useState,
+} from 'react'
 import {
   type ArticleDraft,
   type ArticleRevision,
@@ -10,14 +16,16 @@ import {
   submitDraft,
 } from '../api/articles'
 import { ApiError } from '../api/client'
+import { useCurrentUser } from '../api/auth'
+import { uploadImage } from '../api/uploads'
 import { demoArticles } from '../content/demo-articles'
 import styles from './inline-article-editor.module.css'
 
-type EditableSection = {
-  id: string
-  title: string
-  content: string
-}
+const RichTextEditor = lazy(() =>
+  import('./rich-text-editor').then((module) => ({
+    default: module.RichTextEditor,
+  })),
+)
 
 const emptyDraft: ArticleDraft = {
   title: '',
@@ -27,42 +35,6 @@ const emptyDraft: ArticleDraft = {
   checklist: [''],
   body: '',
   edit_summary: '',
-}
-
-function createId() {
-  return `${Date.now()}-${Math.random().toString(16).slice(2)}`
-}
-
-function parseSections(body: string): EditableSection[] {
-  const sections: EditableSection[] = []
-  let title = '正文'
-  let lines: string[] = []
-
-  function finish() {
-    if (lines.some((line) => line.trim())) {
-      sections.push({ id: createId(), title, content: lines.join('\n').trim() })
-    }
-  }
-
-  for (const line of body.replace(/\r\n/g, '\n').split('\n')) {
-    if (line.startsWith('## ')) {
-      finish()
-      title = line.slice(3).trim() || '未命名章节'
-      lines = []
-    } else {
-      lines.push(line)
-    }
-  }
-  finish()
-  return sections.length
-    ? sections
-    : [{ id: createId(), title: '正文', content: '' }]
-}
-
-function serializeSections(sections: EditableSection[]) {
-  return sections
-    .map(({ title, content }) => `## ${title.trim()}\n\n${content.trim()}`)
-    .join('\n\n')
 }
 
 function demoDraft(name: string, description: string): ArticleDraft {
@@ -106,8 +78,8 @@ export function InlineArticleEditor({
   onSubmitted: () => void
 }) {
   const queryClient = useQueryClient()
+  const currentUser = useCurrentUser()
   const [draft, setDraft] = useState<ArticleDraft>(emptyDraft)
-  const [sections, setSections] = useState<EditableSection[]>([])
   const [initialized, setInitialized] = useState(false)
   const [localError, setLocalError] = useState('')
   const draftQuery = useQuery({
@@ -115,6 +87,9 @@ export function InlineArticleEditor({
     queryFn: ({ signal }) => getDraft(symptomId, signal),
     retry: false,
   })
+  const draftMissing =
+    draftQuery.error instanceof ApiError && draftQuery.error.status === 404
+  const draftFailed = draftQuery.isError && !draftMissing
   const saveMutation = useMutation({
     mutationFn: (payload: ArticleDraft) => saveDraft(symptomId, payload),
     onSuccess: (revision) => {
@@ -132,7 +107,7 @@ export function InlineArticleEditor({
   })
 
   useEffect(() => {
-    if (initialized || draftQuery.isPending) return
+    if (initialized || draftQuery.isPending || draftFailed) return
     const source =
       draftQuery.data ??
       publishedRevision ??
@@ -146,10 +121,10 @@ export function InlineArticleEditor({
       body: source.body,
       edit_summary: source.edit_summary ?? '',
     })
-    setSections(parseSections(source.body))
     setInitialized(true)
   }, [
     draftQuery.data,
+    draftFailed,
     draftQuery.isPending,
     initialized,
     publishedRevision,
@@ -162,18 +137,6 @@ export function InlineArticleEditor({
     value: ArticleDraft[Key],
   ) {
     setDraft((current) => ({ ...current, [key]: value }))
-  }
-
-  function updateSection(
-    id: string,
-    field: 'title' | 'content',
-    value: string,
-  ) {
-    setSections((current) =>
-      current.map((section) =>
-        section.id === id ? { ...section, [field]: value } : section,
-      ),
-    )
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -190,14 +153,47 @@ export function InlineArticleEditor({
     const payload = {
       ...draft,
       checklist: draft.checklist.map((item) => item.trim()).filter(Boolean),
-      body: serializeSections(sections),
     }
     await saveMutation.mutateAsync(payload)
     if (isSubmitting) await submitMutation.mutateAsync()
   }
 
+  if (draftFailed) {
+    return (
+      <div>
+        <p className={styles.error} role="alert">
+          草稿加载失败。为避免覆盖已有内容，编辑器没有创建临时副本。
+        </p>
+        <button
+          className={styles.addButton}
+          type="button"
+          onClick={() => void draftQuery.refetch()}
+        >
+          重新加载草稿
+        </button>
+      </div>
+    )
+  }
+
   if (!initialized) {
     return <p className={styles.loading}>正在准备当前文档的编辑内容…</p>
+  }
+
+  if (draftQuery.data?.status === 'pending') {
+    return (
+      <section className={styles.editor}>
+        <header className={styles.modeHeader}>
+          <div>
+            <strong>修改正在审核</strong>
+            <span>审核完成前不能继续覆盖这份版本。</span>
+          </div>
+          <button type="button" onClick={onCancel}>
+            <X aria-hidden="true" size={17} />
+            返回文档
+          </button>
+        </header>
+      </section>
+    )
   }
 
   const mutationError = saveMutation.error ?? submitMutation.error
@@ -307,56 +303,18 @@ export function InlineArticleEditor({
         </button>
       </section>
 
-      {sections.map((section, index) => (
-        <section key={section.id} className={styles.bodySection}>
-          <div>
-            <span>章节 {index + 1}</span>
-            <button
-              type="button"
-              aria-label={`删除章节 ${section.title}`}
-              disabled={sections.length === 1}
-              onClick={() =>
-                setSections((current) =>
-                  current.filter((item) => item.id !== section.id),
-                )
-              }
-            >
-              <Trash2 aria-hidden="true" size={16} />
-            </button>
-          </div>
-          <input
-            aria-label={`章节 ${index + 1} 标题`}
-            required
-            value={section.title}
-            onChange={(event) =>
-              updateSection(section.id, 'title', event.target.value)
-            }
+      <section className={styles.richTextSection}>
+        <h2>排查正文</h2>
+        <Suspense fallback={<p className={styles.loading}>正在加载正文编辑器…</p>}>
+          <RichTextEditor
+            value={draft.body}
+            onChange={(body) => updateField('body', body)}
+            autoSaveKey={`${currentUser.data?.id ?? 'user'}:${symptomId}:${draftQuery.data?.base_revision_id ?? 0}`}
+            placeholder="按排查顺序写下测量方法、预期结果、可能原因与修复验证…"
+            onUploadImage={async (file) => (await uploadImage(file)).url}
           />
-          <textarea
-            aria-label={`${section.title}正文`}
-            required
-            rows={8}
-            value={section.content}
-            onChange={(event) =>
-              updateSection(section.id, 'content', event.target.value)
-            }
-          />
-        </section>
-      ))}
-
-      <button
-        className={styles.addSectionButton}
-        type="button"
-        onClick={() =>
-          setSections((current) => [
-            ...current,
-            { id: createId(), title: '', content: '' },
-          ])
-        }
-      >
-        <Plus aria-hidden="true" size={17} />
-        添加章节
-      </button>
+        </Suspense>
+      </section>
 
       <label className={styles.editSummary}>
         <span>修改说明</span>

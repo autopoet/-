@@ -8,17 +8,14 @@ from app.core.security import hash_session_token
 from app.models.user import AuthSession, User
 
 
-def get_current_user(
+def get_optional_current_user(
     session_token: Annotated[
         str | None,
         Cookie(alias=settings.session_cookie_name),
     ] = None,
-) -> User:
+) -> User | None:
     if not session_token:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="请先登录",
-        )
+        return None
 
     session = (
         AuthSession.select(AuthSession, User)
@@ -29,12 +26,20 @@ def get_current_user(
     if session is None or session.expires_at <= datetime.now():
         if session is not None:
             session.delete_instance()
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="登录已过期，请重新登录",
-        )
+        return None
 
     return session.user
+
+
+def get_current_user(
+    current_user: Annotated[User | None, Depends(get_optional_current_user)],
+) -> User:
+    if current_user is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="请先登录",
+        )
+    return current_user
 
 
 def get_reviewer(

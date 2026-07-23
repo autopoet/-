@@ -33,3 +33,4 @@ docs/LEARNING_ROADMAP.md
 *.sqlite
 *.sqlite3
 *.egg-info/
+backend/data/uploads/

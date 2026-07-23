@@ -70,49 +70,14 @@ def test_reject_too_short_keyword() -> None:
     assert response.status_code == 422
 
 
-def test_create_symptom() -> None:
-    payload = {
-        "name": "输出波形失真",
-        "description": "示波器观察到输出波形削顶或产生明显畸变",
-    }
-
-    with TestClient(app) as client:
-        response = client.post("/api/v1/symptoms", json=payload)
-
-        assert response.status_code == 201
-
-        created = response.json()
-        stored_response = client.get(f"/api/v1/symptoms/{created['id']}")
-
-    assert created["name"] == payload["name"]
-    assert stored_response.status_code == 200
-    assert stored_response.json() == created
-
-
-def test_reject_duplicate_symptom_name() -> None:
+def test_anonymous_symptom_creation_is_not_available() -> None:
     with TestClient(app) as client:
         response = client.post(
             "/api/v1/symptoms",
             json={
-                "name": "无法上电",
-                "description": "重复的故障现象",
+                "name": "输出波形失真",
+                "description": "示波器观察到输出波形削顶或产生明显畸变",
             },
         )
 
-    assert response.status_code == 409
-    assert response.json() == {
-        "detail": "故障现象名称已存在",
-    }
-
-
-def test_reject_invalid_symptom_payload() -> None:
-    with TestClient(app) as client:
-        response = client.post(
-            "/api/v1/symptoms",
-            json={
-                "name": " ",
-                "description": "短",
-            },
-        )
-
-    assert response.status_code == 422
+    assert response.status_code == 405

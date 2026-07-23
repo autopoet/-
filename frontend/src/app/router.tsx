@@ -2,6 +2,7 @@ import { createBrowserRouter } from 'react-router-dom'
 import { AppLayout } from '../components/app-layout'
 import { LegacyEditorRedirect } from '../components/legacy-editor-redirect'
 import ArticlePage from '../pages/article-page'
+import CreateArticlePage from '../pages/create-article-page'
 import ExplorePage from '../pages/explore-page'
 import HomePage from '../pages/home-page'
 import LoginPage from '../pages/login-page'
@@ -20,6 +21,7 @@ export const router = createBrowserRouter([
       { path: 'explore', element: <ExplorePage /> },
       { path: 'login', element: <LoginPage /> },
       { path: 'profile', element: <ProfilePage /> },
+      { path: 'articles/new', element: <CreateArticlePage /> },
       { path: 'articles/:articleId', element: <ArticlePage /> },
       { path: 'articles/:articleId/edit', element: <LegacyEditorRedirect /> },
       { path: 'submissions', element: <SubmissionsPage /> },

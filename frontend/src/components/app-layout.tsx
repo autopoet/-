@@ -15,6 +15,8 @@ export function AppLayout() {
       document.title = keyword
         ? `${keyword.slice(0, 20)}的搜索结果｜电赛白皮书`
         : '知识库｜电赛白皮书'
+    } else if (location.pathname === '/articles/new') {
+      document.title = '创建条目｜电赛白皮书'
     } else if (location.pathname.startsWith('/articles/')) {
       document.title = new URLSearchParams(location.search).get('edit') === '1'
         ? '编辑文档｜电赛白皮书'

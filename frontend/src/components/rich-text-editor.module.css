@@ -1,0 +1,478 @@
+/* Hallmark · genre: editorial · macrostructure: In-place Document Surface
+ * design-system: DESIGN.md · cardless paper, signal-blue action, restrained motion
+ */
+
+.editor {
+  --editor-line: min(100%, var(--article-max));
+  width: 100%;
+  color: var(--color-ink);
+  background: var(--color-paper);
+  border-block: 1px solid var(--color-border);
+}
+
+.modeRail {
+  min-height: 3.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.modeSwitch,
+.saveState,
+.toolGroup {
+  display: flex;
+  align-items: center;
+}
+
+.modeSwitch {
+  gap: var(--space-1);
+}
+
+.modeSwitch button,
+.saveState button,
+.toolbar button,
+.insertRail button,
+.historyPanel button {
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding-inline: var(--space-3);
+  color: var(--color-muted);
+  font: inherit;
+  font-size: var(--text-meta);
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    color var(--dur-short) var(--ease-out),
+    background-color var(--dur-short) var(--ease-out),
+    transform var(--dur-micro) var(--ease-out);
+}
+
+.modeSwitch button[aria-pressed="true"],
+.toolbar .activeTool {
+  color: var(--color-accent);
+  background: var(--color-accent-soft);
+}
+
+.saveState {
+  gap: var(--space-2);
+  color: var(--color-muted);
+  font-size: var(--text-caption);
+}
+
+.saveState[data-state="error"] {
+  color: var(--color-danger);
+}
+
+.saveState button {
+  min-width: auto;
+  font-size: var(--text-caption);
+}
+
+.toolbar {
+  position: sticky;
+  top: var(--space-2);
+  z-index: var(--z-sticky);
+  display: flex;
+  align-items: center;
+  overflow-x: auto;
+  padding-block: var(--space-2);
+  background: var(--color-paper);
+  border-bottom: 1px solid var(--color-border);
+  scrollbar-width: thin;
+  animation: toolbar-in var(--dur-medium) var(--ease-out) both;
+}
+
+.toolGroup {
+  flex: 0 0 auto;
+  gap: var(--space-1);
+  padding-inline: var(--space-2);
+  border-right: 1px solid var(--color-border);
+}
+
+.toolGroup:first-child {
+  padding-left: 0;
+}
+
+.toolGroup:last-child {
+  border-right: 0;
+}
+
+.toolbar button {
+  padding-inline: var(--space-2);
+}
+
+.toolbar button:disabled,
+.insertRail button:disabled,
+.historyPanel button:disabled {
+  cursor: not-allowed;
+  opacity: 0.35;
+}
+
+.textTool {
+  font-family: var(--font-outlier);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+}
+
+.insertRail {
+  display: grid;
+  grid-template-columns: auto minmax(10rem, 1fr) auto auto;
+  align-items: center;
+  gap: var(--space-2);
+  padding-block: var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+  animation: rail-in var(--dur-short) var(--ease-out) both;
+}
+
+.insertRail:has(input[aria-label="图片说明"]) {
+  grid-template-columns: auto minmax(10rem, 1.4fr) minmax(9rem, 1fr) auto auto;
+}
+
+.insertRail strong {
+  color: var(--color-ink);
+  font-size: var(--text-meta);
+}
+
+.insertRail input {
+  width: 100%;
+  min-height: 2.75rem;
+  padding-inline: var(--space-3);
+  color: var(--color-ink);
+  font: inherit;
+  background: var(--color-paper-muted);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  outline: 0;
+}
+
+.insertRail .fileInput {
+  grid-column: 2 / -1;
+  padding-block: 0.55rem;
+  font-size: var(--text-caption);
+}
+
+.insertRail .fileInput::file-selector-button {
+  padding: var(--space-2) var(--space-3);
+  margin-right: var(--space-3);
+  color: var(--color-accent);
+  font: inherit;
+  background: var(--color-accent-soft);
+  border: 0;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.insertRail .confirmInsert {
+  color: var(--color-accent-ink);
+  background: var(--color-accent);
+}
+
+.insertError {
+  grid-column: 2 / -1;
+  color: var(--color-danger);
+  font-size: var(--text-caption);
+}
+
+.historyPanel {
+  padding-block: var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+  animation: rail-in var(--dur-short) var(--ease-out) both;
+}
+
+.historyPanel ol {
+  max-height: 13rem;
+  padding: 0;
+  margin: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.historyPanel li {
+  min-height: 2.75rem;
+  display: grid;
+  grid-template-columns: 4rem 1fr auto;
+  align-items: center;
+  gap: var(--space-3);
+  color: var(--color-muted);
+  font-size: var(--text-meta);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.historyPanel li > span {
+  color: var(--color-ink);
+  font-family: var(--font-outlier);
+}
+
+.historyPanel .clearHistory {
+  margin-top: var(--space-2);
+  color: var(--color-danger);
+}
+
+.content {
+  width: var(--editor-line);
+  min-height: 28rem;
+  padding-block: var(--space-8) var(--space-12);
+}
+
+.proseMirror {
+  min-height: 24rem;
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  line-height: 1.85;
+  outline: 0;
+  overflow-wrap: anywhere;
+}
+
+.proseMirror > :first-child {
+  margin-top: 0;
+}
+
+.proseMirror > :last-child {
+  margin-bottom: 0;
+}
+
+.proseMirror p {
+  margin: 0 0 var(--space-4);
+}
+
+.proseMirror h2,
+.proseMirror h3 {
+  margin: var(--space-10) 0 var(--space-4);
+  color: var(--color-ink);
+  font-family: var(--font-display);
+  font-weight: var(--weight-bold);
+  line-height: 1.35;
+}
+
+.proseMirror h2 {
+  padding-bottom: var(--space-2);
+  font-size: var(--text-section);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.proseMirror h3 {
+  font-size: var(--text-component);
+}
+
+.proseMirror ul,
+.proseMirror ol {
+  padding-left: var(--space-6);
+  margin: 0 0 var(--space-5);
+}
+
+.proseMirror li {
+  padding-left: var(--space-1);
+  margin-bottom: var(--space-2);
+}
+
+.proseMirror blockquote {
+  padding-left: var(--space-5);
+  margin: var(--space-6) 0;
+  color: var(--color-text);
+  border-left: 2px solid var(--color-accent);
+}
+
+.proseMirror hr {
+  margin: var(--space-10) 0;
+  border: 0;
+  border-top: 1px solid var(--color-border-strong);
+}
+
+.proseMirror code {
+  padding: 0.12em 0.35em;
+  color: var(--color-ink-2);
+  font-family: var(--font-outlier);
+  font-size: 0.9em;
+  background: var(--color-paper-muted);
+  border-radius: var(--radius-sm);
+}
+
+.proseMirror pre {
+  padding: var(--space-5);
+  margin: var(--space-6) 0;
+  overflow-x: auto;
+  color: var(--color-paper);
+  font-family: var(--font-outlier);
+  line-height: 1.65;
+  background: var(--color-code);
+  border-left: 2px solid var(--color-code-signal);
+}
+
+.proseMirror pre code {
+  padding: 0;
+  color: inherit;
+  background: transparent;
+}
+
+.proseMirror a {
+  color: var(--color-accent);
+  text-decoration-color: var(--color-track);
+  text-underline-offset: 0.18em;
+}
+
+.proseMirror img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: var(--space-8) 0;
+  border: 1px solid var(--color-border);
+}
+
+.proseMirror :global(.tableWrapper) {
+  margin: var(--space-8) 0;
+  overflow-x: auto;
+}
+
+.proseMirror table {
+  width: 100%;
+  min-width: 32rem;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.proseMirror th,
+.proseMirror td {
+  position: relative;
+  min-width: 7rem;
+  padding: var(--space-3);
+  vertical-align: top;
+  text-align: left;
+  border: 1px solid var(--color-border-strong);
+}
+
+.proseMirror th {
+  font-weight: var(--weight-semibold);
+  background: var(--color-paper-muted);
+}
+
+.proseMirror :global(.selectedCell)::after {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  content: "";
+  background: var(--color-selection);
+}
+
+.proseMirror span[data-inline-formula] {
+  display: inline-block;
+  padding-inline: 0.35em;
+  color: var(--color-ink-2);
+  font-family: var(--font-outlier);
+  background: var(--color-accent-soft);
+  border-bottom: 1px solid var(--color-track);
+  cursor: default;
+}
+
+.proseMirror p:global(.is-editor-empty):first-child::before {
+  height: 0;
+  float: left;
+  color: var(--color-faint);
+  content: attr(data-placeholder);
+  pointer-events: none;
+}
+
+.proseMirror ::selection {
+  background: var(--color-selection);
+}
+
+.editor[data-mode="preview"] .content {
+  padding-top: var(--space-10);
+}
+
+.editor[data-mode="preview"] .proseMirror {
+  cursor: default;
+}
+
+.modeSwitch button:focus-visible,
+.saveState button:focus-visible,
+.toolbar button:focus-visible,
+.insertRail button:focus-visible,
+.historyPanel button:focus-visible,
+.insertRail input:focus-visible,
+.proseMirror:focus-visible {
+  outline: 0;
+  box-shadow: var(--focus-ring);
+}
+
+@keyframes toolbar-in {
+  from {
+    opacity: 0;
+    transform: translateY(-0.35rem);
+  }
+}
+
+@keyframes rail-in {
+  from {
+    opacity: 0;
+    transform: translateY(-0.25rem);
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .modeSwitch button:hover,
+  .saveState button:hover,
+  .toolbar button:hover,
+  .insertRail button:hover,
+  .historyPanel button:hover {
+    color: var(--color-accent);
+    background: var(--color-accent-soft);
+  }
+
+  .insertRail .confirmInsert:hover {
+    color: var(--color-accent-ink);
+    background: var(--color-accent-hover);
+  }
+}
+
+@media (max-width: 48rem) {
+  .modeRail {
+    align-items: flex-start;
+    flex-direction: column;
+    padding-block: var(--space-2);
+  }
+
+  .saveState {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .insertRail,
+  .insertRail:has(input[aria-label="图片说明"]) {
+    grid-template-columns: minmax(0, 1fr) auto auto;
+  }
+
+  .insertRail strong,
+  .insertRail input,
+  .insertError {
+    grid-column: 1 / -1;
+  }
+
+  .content {
+    min-height: 22rem;
+    padding-block: var(--space-6) var(--space-10);
+  }
+
+  .proseMirror {
+    min-height: 18rem;
+    font-size: var(--text-md);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toolbar,
+  .insertRail,
+  .historyPanel {
+    animation: none;
+  }
+}
